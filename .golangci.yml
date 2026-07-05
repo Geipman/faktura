@@ -1,0 +1,46 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  staticcheck:
+    checks: ["all"]
+  gosec:
+    includes:
+      - G101 # Look for hardcoded credentials
+      - G104 # Audit errors sent to defer
+      - G201 # SQL injection
+      - G202 # SQL injection
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gosec
+    - gofmt
+    - goimports
+
+issues:
+  exclude-rules:
+    # Exclude checks on generated files
+    - path: _templ.go
+      linters:
+        - errcheck
+        - govet
+        - staticcheck
+        - unused
+        - gosec
+        - gofmt
+        - goimports

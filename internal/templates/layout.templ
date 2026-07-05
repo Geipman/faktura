@@ -1,0 +1,74 @@
+package templates
+
+templ Layout(title string, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="de" class="h-full bg-slate-950 text-slate-50">
+		<head>
+			<meta charset="UTF-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<title>{ title } | Faktura Kompostwerk</title>
+			<!-- Google Fonts -->
+			<link rel="preconnect" href="https://fonts.googleapis.com" />
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+			<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+			<!-- HTMX -->
+			<script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QW8u9TjZtLg7q4IuNdy5L5eN3Q4V6G0v4i3gDk6Q2m0g5I=" crossorigin="anonymous"></script>
+			<!-- Tailwind CSS Output -->
+			<link rel="stylesheet" href="/static/css/output.css" />
+			<style>
+				body {
+					font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+				}
+			</style>
+		</head>
+		<body class="h-full flex flex-col overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950">
+			<!-- Top Navbar -->
+			<header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-6 py-4 flex items-center justify-between z-10">
+				<div class="flex items-center gap-3">
+					<!-- Logo -->
+					<div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-slate-950">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0-17.25a9 9 0 1 1-9 9m9-9a9 9 0 1 0 9 9M9.75 9.75c0 .414.168.789.44 1.06l4.56 4.56a1.5 1.5 0 0 1-2.12 2.12l-4.56-4.56a1.5 1.5 0 0 1 2.12-2.12Z" />
+						</svg>
+					</div>
+					<div>
+						<h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">Faktura</h1>
+						<p class="text-xs text-slate-400">Kompostwerk Management</p>
+					</div>
+				</div>
+
+				<nav class="flex items-center gap-6">
+					<a href="/" class="text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
+					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Wiegezettel</a>
+					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Rechnungen</a>
+					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Kunden</a>
+					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Preislisten</a>
+				</nav>
+
+				<div class="flex items-center gap-3">
+					<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+						<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+						System online
+					</span>
+				</div>
+			</header>
+
+			<!-- Main Container -->
+			<main class="flex-1 overflow-y-auto container mx-auto px-6 py-8">
+				@content
+			</main>
+
+			<!-- Footer -->
+			<footer class="border-t border-slate-900 bg-slate-950/80 px-6 py-4 flex items-center justify-between text-xs text-slate-500">
+				<div>
+					© 2026 Kompostierungsanlage. Alle Rechte vorbehalten.
+				</div>
+				<div class="flex gap-4">
+					<span class="hover:text-slate-400 transition-colors">v1.0.0-Beta</span>
+					<span class="text-slate-700">|</span>
+					<span class="hover:text-slate-400 transition-colors">ZUGFeRD 2.2</span>
+				</div>
+			</footer>
+		</body>
+	</html>
+}
