@@ -3,9 +3,14 @@
 # Add Go and local bin paths to the shell PATH
 export PATH := $(PATH):/home/geipman/go/bin:/usr/local/go/bin:$(shell pwd)/bin
 
-.PHONY: all build run test generate css install-tools lint clean
+.PHONY: all build run test generate css install-tools lint clean migrate
 
 all: build
+
+# Run data migration from legacy XML to SQLite
+migrate:
+	@echo "Running data migration..."
+	@go run cmd/migrate/main.go
 
 # Install tools: Tailwind CLI, golangci-lint, templ, air
 install-tools:

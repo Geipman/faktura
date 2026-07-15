@@ -1,0 +1,356 @@
+package templates
+
+import (
+	"fmt"
+	"time"
+)
+
+type InvoiceHeader struct {
+	RechnungId             int64
+	Rechnungsnummer        string
+	Kundennummer           int64
+	Kundenname             string
+	Rechnungsdatum         time.Time
+	LeistungszeitraumStart time.Time
+	LeistungszeitraumEnde  time.Time
+	NettoSumme             float64
+	BruttoSumme            float64
+	Zahlungsstatus         string
+}
+
+type KundeLookup struct {
+	Kundennummer int64
+	Kundenname   string
+}
+
+type InvoiceLineDetail struct {
+	Positionsnummer  int
+	Materialname     string
+	Gesamtgewicht    float64
+	Einheit          string
+	EinzelpreisNetto float64
+	GesamtpreisNetto float64
+	MwstSatz         float64
+	Steuerbetrag     float64
+}
+
+type InvoiceDetails struct {
+	Rechnungsnummer        string
+	Rechnungsdatum         time.Time
+	Faelligkeitsdatum      time.Time
+	LeistungszeitraumStart time.Time
+	LeistungszeitraumEnde  time.Time
+	NettoSumme             float64
+	SteuerSumme            float64
+	BruttoSumme            float64
+	Zahlungsstatus         string
+
+	// Eigene Stammdaten
+	VerkaeuferName    string
+	VerkaeuferStrasse string
+	VerkaeuferPlz     string
+	VerkaeuferOrt     string
+	VerkaeuferIban    string
+	VerkaeuferBic     string
+
+	// Kunde
+	Kundenname        string
+	Kundennummer      int64
+	KundeStrasse      string
+	KundePlz          string
+	KundeOrt          string
+
+	Lines []InvoiceLineDetail
+}
+
+templ Invoices(invoices []InvoiceHeader) {
+	<div class="space-y-8 animate-fade-in">
+		<div class="flex items-center justify-between">
+			<div>
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Rechnungen</h2>
+				<p class="text-slate-400 mt-1">Verwalten und erstellen Sie ZUGFeRD-konforme E-Rechnungen.</p>
+			</div>
+			
+			<a href="/rechnungen/neu" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+				Neue Rechnung erstellen
+			</a>
+		</div>
+
+		<!-- Invoices List -->
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-6">
+			if len(invoices) == 0 {
+				<div class="text-center py-12">
+					<p class="text-slate-500">Es wurden noch keine Rechnungen generiert.</p>
+				</div>
+			} else {
+				<div class="overflow-x-auto">
+					<table class="w-full text-left text-sm text-slate-300">
+						<thead class="text-xs uppercase text-slate-500 border-b border-slate-800">
+							<tr>
+								<th class="py-3 px-4">Rechnungs-Nr.</th>
+								<th class="py-3 px-4">Kunde</th>
+								<th class="py-3 px-4">Datum</th>
+								<th class="py-3 px-4">Zeitraum</th>
+								<th class="py-3 px-4 text-right">Netto</th>
+								<th class="py-3 px-4 text-right">Brutto</th>
+								<th class="py-3 px-4 text-center">Status</th>
+								<th class="py-3 px-4 text-center">Aktionen</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-slate-800/50">
+							for _, inv := range invoices {
+								<tr class="hover:bg-slate-900/40 transition-colors">
+									<td class="py-3 px-4 font-mono text-emerald-400 font-bold">{ inv.Rechnungsnummer }</td>
+									<td class="py-3 px-4 font-medium text-white">{ inv.Kundenname } ({ fmt.Sprintf("%d", inv.Kundennummer) })</td>
+									<td class="py-3 px-4 text-slate-400">{ inv.Rechnungsdatum.Format("02.01.2006") }</td>
+									<td class="py-3 px-4 text-slate-500 text-xs">
+										{ inv.LeistungszeitraumStart.Format("02.01.26") } - { inv.LeistungszeitraumEnde.Format("02.01.26") }
+									</td>
+									<td class="py-3 px-4 text-right font-mono">{ fmt.Sprintf("%.2f €", inv.NettoSumme) }</td>
+									<td class="py-3 px-4 text-right font-mono text-white font-semibold">{ fmt.Sprintf("%.2f €", inv.BruttoSumme) }</td>
+									<td class="py-3 px-4 text-center">
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+											{ inv.Zahlungsstatus }
+										</span>
+									</td>
+									<td class="py-3 px-4 text-center space-x-2">
+										<a href={ templ.URL(fmt.Sprintf("/rechnungen/ansicht/%d", inv.RechnungId)) } class="text-xs font-semibold text-slate-300 hover:text-white transition-colors bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700">
+											Details
+										</a>
+										<a href={ templ.URL(fmt.Sprintf("/rechnungen/pdf/%d", inv.RechnungId)) } class="text-xs font-semibold text-teal-400 hover:text-teal-300 transition-colors bg-teal-500/10 px-2.5 py-1.5 rounded-lg border border-teal-500/20" download>
+											PDF/A-3
+										</a>
+										<a href={ templ.URL(fmt.Sprintf("/rechnungen/xml/%d", inv.RechnungId)) } class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-500/20" download>
+											XML
+										</a>
+										<form action={ templ.URL(fmt.Sprintf("/rechnungen/stornieren/%d", inv.RechnungId)) } method="POST" onsubmit="return confirm('Möchten Sie diese Rechnung wirklich stornieren? Die zugehörigen Wiegezettel werden wieder freigegeben.');" class="inline">
+											<button type="submit" class="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20 cursor-pointer">
+												Stornieren
+											</button>
+										</form>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ InvoiceNew(kunden []KundeLookup) {
+	<div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
+		<div>
+			<h2 class="text-3xl font-extrabold tracking-tight text-white">Rechnung erstellen</h2>
+			<p class="text-slate-400 mt-1">Wählen Sie einen Kunden und den Leistungszeitraum aus. Die Wiegezettel werden automatisch zusammengefasst.</p>
+		</div>
+
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-8">
+			<form action="/rechnungen/neu" method="POST" class="space-y-6">
+				<!-- Kunde -->
+				<div>
+					<label for="kundennummer" class="block text-sm font-semibold text-slate-300 mb-2">Rechnungsempfänger</label>
+					<select id="kundennummer" name="kundennummer" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+						<option value="">-- Kunde auswählen --</option>
+						for _, k := range kunden {
+							<option value={ fmt.Sprintf("%d", k.Kundennummer) }>{ k.Kundenname } ({ fmt.Sprintf("%d", k.Kundennummer) })</option>
+						}
+					</select>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<!-- Startdatum -->
+					<div>
+						<label for="start_datum" class="block text-sm font-semibold text-slate-300 mb-2">Abrechnungszeitraum Start</label>
+						<input type="date" id="start_datum" name="start_datum" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" value="2026-01-01" />
+					</div>
+					<!-- Enddatum -->
+					<div>
+						<label for="ende_datum" class="block text-sm font-semibold text-slate-300 mb-2">Abrechnungszeitraum Ende</label>
+						<input type="date" id="ende_datum" name="ende_datum" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" value="2026-01-31" />
+					</div>
+				</div>
+
+				<div class="pt-4 border-t border-slate-800 flex gap-4 justify-end">
+					<a href="/rechnungen" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">
+						Abbrechen
+					</a>
+					<button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+						Rechnung generieren
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}
+
+templ InvoicePreview(inv *InvoiceDetails) {
+	<div class="space-y-6 max-w-4xl mx-auto">
+		<!-- Action bar -->
+		<div class="flex items-center justify-between no-print">
+			<a href="/rechnungen" class="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+				← Zurück zur Übersicht
+			</a>
+			
+			<div class="flex gap-3">
+				<button onclick="window.print()" class="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">
+					Drucken / PDF speichern
+				</button>
+			</div>
+		</div>
+
+		<!-- Visual DIN A4 Sheet Container -->
+		<div class="bg-white text-slate-950 p-[20mm] rounded-2xl shadow-2xl mx-auto w-full aspect-[1/1.414] max-w-[210mm] border border-slate-200 print:shadow-none print:border-none print:p-0 font-sans leading-relaxed text-sm">
+			<!-- Header Section -->
+			<div class="flex justify-between items-start mb-16">
+				<!-- Seller / Company Info (Briefkopf-Sender) -->
+				<div>
+					<h3 class="font-bold text-base text-slate-900">{ inv.VerkaeuferName }</h3>
+					<p class="text-xs text-slate-600 mt-1">{ inv.VerkaeuferStrasse }</p>
+					<p class="text-xs text-slate-600">{ inv.VerkaeuferPlz } { inv.VerkaeuferOrt }</p>
+				</div>
+				<!-- Invoice Metadata -->
+				<div class="text-right text-xs">
+					<p><span class="inline-block w-28 text-left text-slate-500">Datum</span> <span class="font-medium text-slate-900">{ inv.Rechnungsdatum.Format("02.01.2006") }</span></p>
+					<p class="mt-1"><span class="inline-block w-28 text-left text-slate-500">Rechnungs-Nr.</span> <span class="font-mono font-bold text-slate-900">{ inv.Rechnungsnummer }</span></p>
+				</div>
+			</div>
+
+			<!-- Recipient Address Section -->
+			<div class="mb-12">
+				<div class="text-xs text-slate-400 border-b border-slate-200 pb-1 mb-2 max-w-[80mm] font-light">Empfänger</div>
+				<h4 class="font-bold text-sm text-slate-900">{ inv.Kundenname }</h4>
+				if inv.KundeStrasse != "" {
+					<p class="text-slate-700 mt-1">{ inv.KundeStrasse }</p>
+				}
+				<p class="text-slate-700">{ inv.KundePlz } { inv.KundeOrt }</p>
+			</div>
+
+			<!-- Title -->
+			<div class="text-center mb-10">
+				<h2 class="text-2xl font-bold tracking-[0.2em] text-slate-900 border-y border-slate-950/10 py-3 uppercase">Rechnung</h2>
+			</div>
+
+			<!-- Salutation & Intro -->
+			<div class="space-y-4 mb-6">
+				<p class="text-slate-800">Sehr geehrte Damen und Herren,</p>
+				<p class="text-slate-800">
+					für die Annahme pflanzlicher Abfälle zur Verwertung bzw. den Verkauf von Bodensubstraten berechnen wir Ihnen nachfolgende Positionen gemäß der als Anlage beigefügten Wiegebelege.
+				</p>
+				<p class="font-bold text-slate-900">Rechnungszeitraum: { getGermanMonth(inv.LeistungszeitraumStart.Month()) } { fmt.Sprintf("%d", inv.LeistungszeitraumStart.Year()) }</p>
+			</div>
+
+			<!-- Positions Table -->
+			<div class="mb-8">
+				<table class="w-full text-left text-xs border-collapse">
+					<thead>
+						<tr class="border-b border-slate-900 font-bold text-slate-900">
+							<th class="py-2">Pos</th>
+							<th class="py-2">Material</th>
+							<th class="py-2 text-right">Menge</th>
+							<th class="py-2 text-right">Preis pro Einh.</th>
+							<th class="py-2 text-right">USt-Satz</th>
+							<th class="py-2 text-right">Netto</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-slate-200">
+						for _, line := range inv.Lines {
+							<tr class="text-slate-800">
+								<td class="py-2 font-light">{ fmt.Sprintf("%d", line.Positionsnummer) }</td>
+								<td class="py-2 font-medium">{ line.Materialname }</td>
+								<td class="py-2 text-right">{ fmt.Sprintf("%.2f %s", line.Gesamtgewicht, line.Einheit) }</td>
+								<td class="py-2 text-right">{ fmt.Sprintf("%.2f €", line.EinzelpreisNetto) }</td>
+								<td class="py-2 text-right">{ fmt.Sprintf("%.0f%%", line.MwstSatz) }</td>
+								<td class="py-2 text-right font-mono">{ fmt.Sprintf("%.2f €", line.GesamtpreisNetto) }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- VAT Matrix Section -->
+			<div class="flex justify-end mb-8">
+				<div class="w-[120mm]">
+					<table class="w-full text-right text-[10px] border-collapse">
+						<thead>
+							<tr class="border-b border-slate-400 font-bold text-slate-700">
+								<th class="py-1">Netto (€)</th>
+								<th class="py-1">MwSt. (%)</th>
+								<th class="py-1">MwSt. (€)</th>
+								<th class="py-1">Brutto (€)</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-slate-100 text-slate-600">
+							<!-- Display 7% and 19% aggregations -->
+							@renderTaxRow(7.0, inv.Lines)
+							@renderTaxRow(19.0, inv.Lines)
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Total Summary Block -->
+			<div class="border-t border-slate-900 pt-3 flex justify-between items-center mb-16">
+				<span class="text-sm font-bold text-slate-900">Rechnungsbetrag</span>
+				<span class="text-base font-bold text-slate-900 border-b-4 border-double border-slate-900 pb-0.5">{ fmt.Sprintf("%.2f €", inv.BruttoSumme) }</span>
+			</div>
+
+			<!-- Footer bank details -->
+			<div class="border-t border-slate-100 pt-6 text-[10px] text-slate-500 flex justify-between mt-auto">
+				<div>
+					<p class="font-medium text-slate-700">Zahlungsbedingung:</p>
+					<p class="mt-0.5">Zahlbar innerhalb 14 Tagen ohne Abzüge.</p>
+				</div>
+				<div class="text-right">
+					<p class="font-medium text-slate-700">Bankverbindung:</p>
+					<p class="mt-0.5">IBAN: { inv.VerkaeuferIban }</p>
+					<p>BIC: { inv.VerkaeuferBic }</p>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+// Helper template function to calculate tax rows dynamically
+templ renderTaxRow(rate float64, lines []InvoiceLineDetail) {
+	<!-- calculate sums in memory -->
+	{{
+		var netSum float64
+		var taxSum float64
+		for _, line := range lines {
+			if line.MwstSatz == rate {
+				netSum += line.GesamtpreisNetto
+				taxSum += line.Steuerbetrag
+			}
+		}
+		// Round values
+		netSum = float64(int(netSum*100+0.5)) / 100.0
+		taxSum = float64(int(taxSum*100+0.5)) / 100.0
+		grossSum := netSum + taxSum
+	}}
+	<tr>
+		<td class="py-1 font-mono">{ fmt.Sprintf("%.2f €", netSum) }</td>
+		<td class="py-1">{ fmt.Sprintf("%.0f %%", rate) }</td>
+		<td class="py-1 font-mono">{ fmt.Sprintf("%.2f €", taxSum) }</td>
+		<td class="py-1 font-mono">{ fmt.Sprintf("%.2f €", grossSum) }</td>
+	</tr>
+}
+
+func getGermanMonth(m time.Month) string {
+	months := map[time.Month]string{
+		time.January:   "Januar",
+		time.February:  "Februar",
+		time.March:     "März",
+		time.April:     "April",
+		time.May:       "Mai",
+		time.June:      "Juni",
+		time.July:      "Juli",
+		time.August:    "August",
+		time.September: "September",
+		time.October:   "Oktober",
+		time.November:  "November",
+		time.December:  "Dezember",
+	}
+	return months[m]
+}

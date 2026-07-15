@@ -11,8 +11,7 @@ templ Layout(title string, content templ.Component) {
 			<link rel="preconnect" href="https://fonts.googleapis.com" />
 			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 			<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-			<!-- HTMX -->
-			<script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QW8u9TjZtLg7q4IuNdy5L5eN3Q4V6G0v4i3gDk6Q2m0g5I=" crossorigin="anonymous"></script>
+			<script src="https://unpkg.com/htmx.org@2.0.1"></script>
 			<!-- Tailwind CSS Output -->
 			<link rel="stylesheet" href="/static/css/output.css" />
 			<style>
@@ -38,9 +37,9 @@ templ Layout(title string, content templ.Component) {
 				</div>
 
 				<nav class="flex items-center gap-6">
-					<a href="/" class="text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">Dashboard</a>
+					<a href="/" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Dashboard</a>
 					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Wiegezettel</a>
-					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Rechnungen</a>
+					<a href="/rechnungen" class="text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">Rechnungen</a>
 					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Kunden</a>
 					<a href="#" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Preislisten</a>
 				</nav>
