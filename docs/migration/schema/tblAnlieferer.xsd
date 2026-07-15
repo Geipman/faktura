@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:od="urn:schemas-microsoft-com:officedata">
+<xsd:element name="dataroot">
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element ref="tblAnlieferer" minOccurs="0" maxOccurs="unbounded"/>
+</xsd:sequence>
+<xsd:attribute name="generated" type="xsd:dateTime"/>
+</xsd:complexType>
+</xsd:element>
+<xsd:element name="tblAnlieferer">
+<xsd:annotation>
+<xsd:appinfo>
+<od:tableProperty name="Orientation" type="2" value="0"/>
+<od:tableProperty name="OrderByOn" type="1" value="1"/>
+<od:tableProperty name="NameMap" type="11" value="CswOVQAAAABc1h93LLrVEb2gCAA2oCMDAAAAACfpJYf5NOJAAAAAAAAAAAB0AGIA
+bABBAG4AbABpAGUAZgBlAHIAZQByAAAAAAAAAF3WH3csutURvaAIADagIwMHAAAA
+XNYfdyy61RG9oAgANqAjA0EAbgBsAGkAZQBmAGUAcgBlAHIASABlAHIAawB1AG4A
+ZgB0AAAA
+"/>
+<od:tableProperty name="GUID" type="9" value="XNYfdyy61RG9oAgANqAjAw==
+"/>
+<od:tableProperty name="OrderBy" type="12" value="tblAnlieferer.AnliefererHerkunft"/>
+</xsd:appinfo>
+</xsd:annotation>
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element name="AnliefererHerkunft" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:annotation>
+<xsd:appinfo>
+<od:fieldProperty name="ColumnWidth" type="3" value="2016"/>
+<od:fieldProperty name="ColumnOrder" type="3" value="1"/>
+<od:fieldProperty name="ColumnHidden" type="1" value="0"/>
+<od:fieldProperty name="Required" type="1" value="0"/>
+<od:fieldProperty name="AllowZeroLength" type="1" value="0"/>
+<od:fieldProperty name="DisplayControl" type="3" value="109"/>
+<od:fieldProperty name="UnicodeCompression" type="1" value="1"/>
+<od:fieldProperty name="GUID" type="9" value="XdYfdyy61RG9oAgANqAjAw==
+"/>
+<od:fieldProperty name="Caption" type="12" value="Anlieferer / Herkunft"/>
+</xsd:appinfo>
+</xsd:annotation>
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="50"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:element>
+</xsd:schema>

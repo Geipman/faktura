@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot xmlns:od="urn:schemas-microsoft-com:officedata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="tblAnlieferungOrt.xsd" generated="2026-07-15T21:21:51">
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Biebesheim</AnlieferungsOrt>
+</tblAnlieferungOrt>
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Geinsheim</AnlieferungsOrt>
+</tblAnlieferungOrt>
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Gernsheim</AnlieferungsOrt>
+</tblAnlieferungOrt>
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Stockstadt</AnlieferungsOrt>
+</tblAnlieferungOrt>
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Friedhof</AnlieferungsOrt>
+</tblAnlieferungOrt>
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Griesheim</AnlieferungsOrt>
+</tblAnlieferungOrt>
+<tblAnlieferungOrt>
+<AnlieferungsOrt>Riedstadt</AnlieferungsOrt>
+</tblAnlieferungOrt>
+</dataroot>

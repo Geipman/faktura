@@ -1,0 +1,740 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot xmlns:od="urn:schemas-microsoft-com:officedata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="tblMaterialarten.xsd" generated="2026-07-15T21:21:21">
+<tblMaterialarten>
+<Material>Abfälle (AS 20 03 01)</Material>
+<Nettopreis>85</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abfälle aus der Holzbearbeitung (AS 03 01 05)</Material>
+<Nettopreis>100</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abfälle aus pflanzlichem Gewebe (AS 02 01 03)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abgabe Bau- und Abbruchabfälle (AS 17 09 04)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abgabe Leichtstoffe (AS 19 05 01)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abgabe Mineralische Abfälle (AS 19 12 09)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abgabe Mischschrott (AS 17 04 05)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abgabe Siebüberlauf (AS 19 05 01)</Material>
+<Nettopreis>5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Abgabe Siedlungsabfälle (AS 20 03 01)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>AdBlue</Material>
+<Nettopreis>0.45</Nettopreis>
+<Mwst>0.19</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Anfahrt Schredder und Ladefahrzeug (pauschal)</Material>
+<Nettopreis>220</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Anzahlung</Material>
+<Nettopreis>1</Nettopreis>
+<Mwst>0</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Aufbereitete holzige Biomasse Qualität A [m³]</Material>
+<Nettopreis>20</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Aufbereitete holzige Biomasse Qualität B [m³]</Material>
+<Nettopreis>20</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Aufbereitung biogener Reststoffe</Material>
+<Nettopreis>40</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Bauschutt gemischt (AS 17 01 07)</Material>
+<Nettopreis>25</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Betreuung Grünsammelstelle (Monatspauschale)</Material>
+<Nettopreis>200</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Betrieb eines Radladers mit Fahrer</Material>
+<Nettopreis>75</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Big Bag - Abfüllung</Material>
+<Nettopreis>25</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>BigBag</Material>
+<Nettopreis>8</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Küchen- und Kantinenabfälle (AS 20 01 08)</Material>
+<Nettopreis>35</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Bioabfall aus kommunaler Sammlung (AS 20 03 01)</Material>
+<Nettopreis>45</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Bioabfall verunreinigt (AS 20 03 01)</Material>
+<Nettopreis>39</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Bioabfall vorbehandelt (AS 20 03 01)</Material>
+<Nettopreis>20</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Bioabfalltüten (Karton à 300 Stück)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Bioabfalltüten (Pack à 25 Stück)</Material>
+<Nettopreis>1.68</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Biofiltermaterial (AS 02 01 03)</Material>
+<Nettopreis>5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Biologisch abbaubare Abfälle (AS 20 02 01)</Material>
+<Nettopreis>45</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Biomasse aufbereitet</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Biomasse aufbereitet [m³]</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Biomasse zur Aufbereitung [t]</Material>
+<Nettopreis>4.5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Biomasse zwischenlagern (pauschal)</Material>
+<Nettopreis>30</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Blumenerde</Material>
+<Nettopreis>46.22</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Dachsubstrat (AS 20 02 02)</Material>
+<Nettopreis>35</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Einsatz eines Spritzwagens mit Traktor und Fahrer</Material>
+<Nettopreis>75</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Einsatz Radlader inkl. aller Kosten (pro Std.)</Material>
+<Nettopreis>60</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Einsatz Schredder inkl. aller Kosten (pro Std.)</Material>
+<Nettopreis>140</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Erdaushub (AS 20 02 02)</Material>
+<Nettopreis>25</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Erdaushub (SONDERPREIS)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Erdaushub mG (SONDERPREIS)</Material>
+<Nettopreis>1</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Erdaushub mit Grünschnitt, Wurzeln (AS 20 02 02)</Material>
+<Nettopreis>30</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Fallschutzbelag natur 5/30</Material>
+<Nettopreis>30</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Feinkompost 0/12</Material>
+<Nettopreis>11.21</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Feinkompost 0/12 (Grüngut)</Material>
+<Nettopreis>16</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Feinkompost 0/12 (Grüngut) Sonderpreis</Material>
+<Nettopreis>10</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Flyer &quot;Was gehört in die Biotonne?&quot;</Material>
+<Nettopreis>0.02</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Forstabfälle (AS 02 01 07)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Fremdwägung</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Fremdwägung (Schottertragschicht 0/32 - Naturmaterial)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Friedhofabfälle (AS 20 02 01)</Material>
+<Nettopreis>22.5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Frischkompost</Material>
+<Nettopreis>5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Gemüseabfälle (AS 02 03 04)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Getreideabfälle (AS 02 03 04)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Gewebesack</Material>
+<Nettopreis>0.84</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall (AS 20 02 01)</Material>
+<Nettopreis>35</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall (AS 20 02 01) [m³]</Material>
+<Nettopreis>7.5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall inkl. Transport (AS 20 02 01)</Material>
+<Nettopreis>33</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall mit Fremdstoffen (AS 20 02 01)</Material>
+<Nettopreis>29</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall shreddern [h]</Material>
+<Nettopreis>60</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall, Feinmaterial (AS 20 02 01)</Material>
+<Nettopreis>7.5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall, Grobmaterial (AS 20 02 01)</Material>
+<Nettopreis>-10</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall, zerkleinert (AS 20 02 01)</Material>
+<Nettopreis>25</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünabfall, zerkleinert (AS 20 02 01) SONDERPREIS</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünhäcksel [t]</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Grünhäcksel [t] (SONDERPREIS)</Material>
+<Nettopreis>10</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Gutschrift 19%</Material>
+<Nettopreis>1</Nettopreis>
+<Mwst>0.19</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Gutschrift 7%</Material>
+<Nettopreis>1</Nettopreis>
+<Mwst>0.07</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Heuballen (AS 02 01 03)</Material>
+<Nettopreis>25</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holz mit Ausnahme desjenigen, das unter 19 12 06 fällt (AS 19 12 07)</Material>
+<Nettopreis>35</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holzabfälle (AS 03 01 05)</Material>
+<Nettopreis>20</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holzhackschnitzel</Material>
+<Nettopreis>35</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holzhäcksel</Material>
+<Nettopreis>25.21</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holzhäcksel [m³]</Material>
+<Nettopreis>7</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holzhäcksel fein [m³]</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Holzhäcksel grob [m³]</Material>
+<Nettopreis>5</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Kompost 0/20</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Kompost 0/20 (Grüngut)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Kompoststreuer (Tagesmiete)</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Landschaftspflegematerial (Hackgut)</Material>
+<Nettopreis>-20</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Landschaftspflegematerial (Holz)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Landwirtschaftliche Abfälle (AS 02 01 03)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Laub (AS 20 02 01)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Mahngebühren</Material>
+<Nettopreis>2.5</Nettopreis>
+<Mwst>0</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Material absieben [h]</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Materialanalyse</Material>
+<Nettopreis>100</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>pausch.</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Materialtransport inkl. aller Kosten (pro Std.)</Material>
+<Nettopreis>55</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Mineralische Abfälle (AS 19 12 09)</Material>
+<Nettopreis>55</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Mulchkompost</Material>
+<Nettopreis>6</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Mulchkompost [m³]</Material>
+<Nettopreis>5</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Nahrungsmittelabfälle (AS 02 03 04)</Material>
+<Nettopreis>19</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Nahrungsmittelabfälle verpackt (AS 02 03 04)</Material>
+<Nettopreis>55</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Palette (C3-Format</Material>
+<Nettopreis>16</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Palette (Euro-Format)</Material>
+<Nettopreis>16</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Pauschale Nahrungsmittelabfälle (AS 02 03 04)</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Personaleinsatz</Material>
+<Nettopreis>80</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Std</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Pferdemist (AS 02 01 06)</Material>
+<Nettopreis>8.62</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Pflanz- und Gartenerde</Material>
+<Nettopreis>18</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Pflanz- und Gartenerde (SONDERPREIS)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rabatt</Material>
+<Nettopreis>1</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Reparaturaufwand (Personalkosten)</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>pauschal</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Reststoffe aus der Kompostierung (AS 19 05 01)</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rindenhumus 0/12 [m³]</Material>
+<Nettopreis>32.71</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rindenmulch 0/12 [m³]</Material>
+<Nettopreis>18</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rindenmulch 0/20 [m³]</Material>
+<Nettopreis>37.5</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rindenmulch 0/40 [m³]</Material>
+<Nettopreis>20</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rindenmulch 20/40 [m³]</Material>
+<Nettopreis>37.5</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>m³</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Rübenkraut (AS 02 04 99)</Material>
+<Nettopreis>15</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Schwerstoffe (AS 19 12 12) Testmaterial</Material>
+<Nettopreis>39</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Siebüberlauf (AS 19 05 01)</Material>
+<Nettopreis>30</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Siebüberlauf (AS 19 05 01) (SONDERPREIS)</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Siedlungsabfälle (Bioabfall) (AS 20 03 01)</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Sortieraufwand</Material>
+<Nettopreis>20</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Spanngurt</Material>
+<Nettopreis>16</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Stallkompost 12/25 [t]</Material>
+<Nettopreis>4</Nettopreis>
+<Mwst>0.07</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Straßenbegleitgrün (AS 20 02 01)</Material>
+<Nettopreis>59</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Tabakstaub (AS 02 03 04)</Material>
+<Nettopreis>19</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Transportentgelt</Material>
+<Nettopreis>25.21</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Transportentgelt 2</Material>
+<Nettopreis>50</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Stk</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Treibgut (AS 20 02 01)</Material>
+<Nettopreis>40</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Wiegeschein ungültig</Material>
+<Nettopreis>0</Nettopreis>
+<Mwst>0</Mwst>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Wurzeln/Grobholz (AS 20 02 01)</Material>
+<Nettopreis>40</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Wurzeln/Grobholz inkl. Transport (AS 20 02 01)</Material>
+<Nettopreis>40</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Zuckerrübenreste (AS 02 04 99)</Material>
+<Nettopreis>27.5</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>t</Einheit>
+</tblMaterialarten>
+<tblMaterialarten>
+<Material>Reparaturaufwand (Materialkosten)</Material>
+<Nettopreis>1</Nettopreis>
+<Mwst>0.19</Mwst>
+<Einheit>Nachweis</Einheit>
+</tblMaterialarten>
+</dataroot>

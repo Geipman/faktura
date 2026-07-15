@@ -9,6 +9,7 @@ This repository is designed for collaborative development between humans and dif
 - **Business Domain**: Invoicing (Fakturierung) for products sold by weight.
 - **Key Concepts**: Customer data (Kunden), Price lists (Preislisten), Weighing slips (Wiegezettel), and Invoice generation (Rechnungserstellung).
 - **Core Standard**: Electronic invoices must conform to the German **ZUGFeRD** standard.
+- **Project Language**: German (Deutsch). All database schemas, code comments, UI labels, and developer documentation must be in German.
 - **Architecture**: A single-binary Go application. Standard Go Project Layout with `cmd/` for entry points and `internal/` for private business logic, database operations, server endpoints, and HTML templates.
 
 ## Developer & Agent Guidelines
@@ -30,7 +31,9 @@ Before making any changes or suggesting plans, you **MUST** read and adhere to:
 │   └── faktura/             # Main executable and entry point
 ├── docs/                    # Technical documentation & architecture records
 │   ├── architecture/adr/    # Architecture Decision Records (ADRs)
+│   ├── concepts/            # Concepts, UI designs, and specifications
 │   ├── guidelines/          # Coding and style guidelines
+│   ├── migration/           # Legacy Access DB XML/XSD migration files
 │   └── requirements/        # Product specifications and feature lists
 ├── internal/                # Private application packages
 │   ├── db/                  # SQLite connection and migration code
