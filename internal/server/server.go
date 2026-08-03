@@ -63,6 +63,25 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /wiegezettel/bearbeiten/{id}", s.handleWiegezettelEditForm)
 	s.mux.HandleFunc("POST /wiegezettel/bearbeiten/{id}", s.handleWiegezettelUpdate)
 	s.mux.HandleFunc("POST /wiegezettel/loeschen/{id}", s.handleWiegezettelDelete)
+
+	// Kunden CRUD Routes
+	s.mux.HandleFunc("GET /kunden", s.handleKundenList)
+	s.mux.HandleFunc("GET /kunden/tabelle", s.handleKundenTable)
+	s.mux.HandleFunc("GET /kunden/neu", s.handleKundenNewForm)
+	s.mux.HandleFunc("POST /kunden/neu", s.handleKundenCreate)
+	s.mux.HandleFunc("GET /kunden/bearbeiten/{id}", s.handleKundenEditForm)
+	s.mux.HandleFunc("POST /kunden/bearbeiten/{id}", s.handleKundenUpdate)
+	s.mux.HandleFunc("POST /kunden/loeschen/{id}", s.handleKundenDelete)
+
+	// Preislisten CRUD Routes
+	s.mux.HandleFunc("GET /preislisten", s.handlePreislistenList)
+	s.mux.HandleFunc("GET /preislisten/neu", s.handlePreislistenNewForm)
+	s.mux.HandleFunc("POST /preislisten/neu", s.handlePreislistenCreate)
+	s.mux.HandleFunc("GET /preislisten/bearbeiten/{kundennummer}/{material_id}", s.handlePreislistenEditForm)
+	s.mux.HandleFunc("POST /preislisten/bearbeiten/{kundennummer}/{material_id}", s.handlePreislistenUpdate)
+	s.mux.HandleFunc("POST /preislisten/loeschen/{kundennummer}/{material_id}", s.handlePreislistenDelete)
+	s.mux.HandleFunc("GET /preislisten/master/bearbeiten/{id}", s.handleMasterPriceEditForm)
+	s.mux.HandleFunc("POST /preislisten/master/bearbeiten/{id}", s.handleMasterPriceUpdate)
 }
 
 // handleIndex redirects to dashboard.
@@ -1174,6 +1193,544 @@ func (s *Server) handleWiegezettelDelete(w http.ResponseWriter, r *http.Request)
 	_, err = s.db.Exec("DELETE FROM wiegezettel WHERE wiegezettel_id = ?", id)
 	if err != nil {
 		log.Printf("Delete Wiegezettel error: %v", err)
+		http.Error(w, "Datenbankfehler beim Löschen", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// queryKunden helper to query and filter customers.
+func (s *Server) queryKunden(r *http.Request) ([]templates.KundenRow, string, error) {
+	search := r.FormValue("search")
+	query := `
+		SELECT kundennummer, kundenname, COALESCE(namenserweiterung, ''), 
+		       ist_privat, brief_versand, COALESCE(strasse, ''), COALESCE(plz, ''), 
+		       COALESCE(ort, ''), landescode, COALESCE(telefon, ''), COALESCE(fax, ''), 
+		       COALESCE(email_allgemein, ''), COALESCE(email_rechnung, ''), COALESCE(kontaktperson, ''), 
+		       COALESCE(iban, ''), COALESCE(bic, ''), COALESCE(ust_id_nr, ''), COALESCE(steuernummer, ''), 
+		       COALESCE(leitweg_id, ''), zahlungsziel_tage, zahlungsart, COALESCE(anmerkungen, '')
+		FROM kunden
+		WHERE 1=1
+	`
+	var args []interface{}
+	if search != "" {
+		query += " AND (kundenname LIKE ? OR kundennummer = ? OR ort LIKE ?)"
+		searchInt, err := strconv.ParseInt(search, 10, 64)
+		if err == nil {
+			args = append(args, "%"+search+"%", searchInt, "%"+search+"%")
+		} else {
+			args = append(args, "%"+search+"%", -1, "%"+search+"%")
+		}
+	}
+	query += " ORDER BY kundenname ASC LIMIT 100"
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, "", err
+	}
+	defer rows.Close()
+
+	var result []templates.KundenRow
+	for rows.Next() {
+		var k templates.KundenRow
+		scanErr := rows.Scan(
+			&k.Kundennummer, &k.Kundenname, &k.Namenserweiterung,
+			&k.IstPrivat, &k.BriefVersand, &k.Strasse, &k.Plz, &k.Ort,
+			&k.Landescode, &k.Telefon, &k.Fax, &k.EmailAllgemein, &k.EmailRechnung,
+			&k.Kontaktperson, &k.Iban, &k.Bic, &k.UstIdNr, &k.Steuernummer,
+			&k.LeitwegId, &k.ZahlungszielTage, &k.Zahlungsart, &k.Anmerkungen,
+		)
+		if scanErr != nil {
+			log.Printf("Scan error in queryKunden: %v", scanErr)
+			continue
+		}
+		result = append(result, k)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, "", err
+	}
+	return result, search, nil
+}
+
+func (s *Server) handleKundenList(w http.ResponseWriter, r *http.Request) {
+	rows, search, err := s.queryKunden(r)
+	if err != nil {
+		log.Printf("Error querying customers: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	page := templates.KundenPage(rows, search)
+	layout := templates.Layout("Kunden", page)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering Kunden page: %v", err)
+	}
+}
+
+func (s *Server) handleKundenTable(w http.ResponseWriter, r *http.Request) {
+	rows, _, err := s.queryKunden(r)
+	if err != nil {
+		log.Printf("Error querying customers: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	comp := templates.KundenTable(rows)
+	if err := comp.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering Kunden table: %v", err)
+	}
+}
+
+func (s *Server) handleKundenNewForm(w http.ResponseWriter, r *http.Request) {
+	var nextNum int64
+	err := s.db.QueryRow("SELECT COALESCE(MAX(kundennummer), 10000) + 1 FROM kunden").Scan(&nextNum)
+	if err != nil || nextNum < 10001 {
+		nextNum = 10001
+	}
+	var dummy templates.KundenRow
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.KundenForm(&dummy, false, nextNum)
+	layout := templates.Layout("Kunden anlegen", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering Kunden form: %v", err)
+	}
+}
+
+func (s *Server) handleKundenCreate(w http.ResponseWriter, r *http.Request) {
+	kNumStr := r.FormValue("kundennummer")
+	kName := r.FormValue("kundenname")
+	namensErw := r.FormValue("namenserweiterung")
+	istPrivat := r.FormValue("ist_privat") == "true"
+	briefVersand := r.FormValue("brief_versand") == "true"
+	strasse := r.FormValue("strasse")
+	plz := r.FormValue("plz")
+	ort := r.FormValue("ort")
+	landescode := r.FormValue("landescode")
+	telefon := r.FormValue("telefon")
+	fax := r.FormValue("fax")
+	emailAllg := r.FormValue("email_allgemein")
+	emailRech := r.FormValue("email_rechnung")
+	kontakt := r.FormValue("kontaktperson")
+	iban := r.FormValue("iban")
+	bic := r.FormValue("bic")
+	ustID := r.FormValue("ust_id_nr")
+	steuerNum := r.FormValue("steuernummer")
+	leitwegID := r.FormValue("leitweg_id")
+	zahlZielTageStr := r.FormValue("zahlungsziel_tage")
+	zahlArt := r.FormValue("zahlungsart")
+	anmerkungen := r.FormValue("anmerkungen")
+
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil || kNum < 10001 || kNum > 99999 {
+		http.Error(w, "Ungültige Kundennummer (muss zwischen 10001 und 99999 liegen)", http.StatusBadRequest)
+		return
+	}
+	zahlZielTage, err := strconv.Atoi(zahlZielTageStr)
+	if err != nil {
+		zahlZielTage = 14
+	}
+
+	_, err = s.db.Exec(`
+		INSERT INTO kunden (
+			kundennummer, kundenname, namenserweiterung, ist_privat, brief_versand,
+			strasse, plz, ort, landescode, telefon, fax, email_allgemein, email_rechnung,
+			kontaktperson, iban, bic, ust_id_nr, steuernummer, leitweg_id, zahlungsziel_tage,
+			zahlungsart, anmerkungen
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		kNum, kName, namensErw, istPrivat, briefVersand, strasse, plz, ort, landescode,
+		telefon, fax, emailAllg, emailRech, kontakt, iban, bic, ustID, steuerNum,
+		leitwegID, zahlZielTage, zahlArt, anmerkungen,
+	)
+	if err != nil {
+		log.Printf("Insert Kunden error: %v", err)
+		http.Error(w, "Datenbankfehler beim Einfügen", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/kunden", http.StatusSeeOther)
+}
+
+func (s *Server) handleKundenEditForm(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Kundennummer", http.StatusBadRequest)
+		return
+	}
+
+	var k templates.KundenRow
+	err = s.db.QueryRow(`
+		SELECT kundennummer, kundenname, COALESCE(namenserweiterung, ''), 
+		       ist_privat, brief_versand, COALESCE(strasse, ''), COALESCE(plz, ''), 
+		       COALESCE(ort, ''), landescode, COALESCE(telefon, ''), COALESCE(fax, ''), 
+		       COALESCE(email_allgemein, ''), COALESCE(email_rechnung, ''), COALESCE(kontaktperson, ''), 
+		       COALESCE(iban, ''), COALESCE(bic, ''), COALESCE(ust_id_nr, ''), COALESCE(steuernummer, ''), 
+		       COALESCE(leitweg_id, ''), zahlungsziel_tage, zahlungsart, COALESCE(anmerkungen, '')
+		FROM kunden WHERE kundennummer = ?
+	`, id).Scan(
+		&k.Kundennummer, &k.Kundenname, &k.Namenserweiterung,
+		&k.IstPrivat, &k.BriefVersand, &k.Strasse, &k.Plz, &k.Ort,
+		&k.Landescode, &k.Telefon, &k.Fax, &k.EmailAllgemein, &k.EmailRechnung,
+		&k.Kontaktperson, &k.Iban, &k.Bic, &k.UstIdNr, &k.Steuernummer,
+		&k.LeitwegId, &k.ZahlungszielTage, &k.Zahlungsart, &k.Anmerkungen,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+		} else {
+			log.Printf("Query error fetching customer: %v", err)
+			http.Error(w, "DB Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.KundenForm(&k, true, 0)
+	layout := templates.Layout("Kunde bearbeiten", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering edit Kunden form: %v", err)
+	}
+}
+
+func (s *Server) handleKundenUpdate(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Kundennummer", http.StatusBadRequest)
+		return
+	}
+
+	kName := r.FormValue("kundenname")
+	namensErw := r.FormValue("namenserweiterung")
+	istPrivat := r.FormValue("ist_privat") == "true"
+	briefVersand := r.FormValue("brief_versand") == "true"
+	strasse := r.FormValue("strasse")
+	plz := r.FormValue("plz")
+	ort := r.FormValue("ort")
+	landescode := r.FormValue("landescode")
+	telefon := r.FormValue("telefon")
+	fax := r.FormValue("fax")
+	emailAllg := r.FormValue("email_allgemein")
+	emailRech := r.FormValue("email_rechnung")
+	kontakt := r.FormValue("kontaktperson")
+	iban := r.FormValue("iban")
+	bic := r.FormValue("bic")
+	ustID := r.FormValue("ust_id_nr")
+	steuerNum := r.FormValue("steuernummer")
+	leitwegID := r.FormValue("leitweg_id")
+	zahlZielTageStr := r.FormValue("zahlungsziel_tage")
+	zahlArt := r.FormValue("zahlungsart")
+	anmerkungen := r.FormValue("anmerkungen")
+
+	zahlZielTage, err := strconv.Atoi(zahlZielTageStr)
+	if err != nil {
+		zahlZielTage = 14
+	}
+
+	_, err = s.db.Exec(`
+		UPDATE kunden 
+		SET kundenname = ?, namenserweiterung = ?, ist_privat = ?, brief_versand = ?,
+		    strasse = ?, plz = ?, ort = ?, landescode = ?, telefon = ?, fax = ?, 
+		    email_allgemein = ?, email_rechnung = ?, kontaktperson = ?, iban = ?, bic = ?, 
+		    ust_id_nr = ?, steuernummer = ?, leitweg_id = ?, zahlungsziel_tage = ?,
+		    zahlungsart = ?, anmerkungen = ?
+		WHERE kundennummer = ?`,
+		kName, namensErw, istPrivat, briefVersand, strasse, plz, ort, landescode,
+		telefon, fax, emailAllg, emailRech, kontakt, iban, bic, ustID, steuerNum,
+		leitwegID, zahlZielTage, zahlArt, anmerkungen, id,
+	)
+	if err != nil {
+		log.Printf("Update Kunden error: %v", err)
+		http.Error(w, "Datenbankfehler beim Aktualisieren", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/kunden", http.StatusSeeOther)
+}
+
+func (s *Server) handleKundenDelete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Kundennummer", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec("DELETE FROM kunden WHERE kundennummer = ?", id)
+	if err != nil {
+		log.Printf("Delete Kunden error: %v", err)
+		http.Error(w, "Datenbankfehler beim Löschen", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handlePreislistenList(w http.ResponseWriter, r *http.Request) {
+	tab := r.FormValue("tab")
+	if tab == "" {
+		tab = "master"
+	}
+
+	var masterRows []templates.MasterPriceRow
+	var customRows []templates.CustomPriceRow
+
+	// Load Master prices
+	rows, err := s.db.Query("SELECT material_id, materialname, standard_nettopreis, mwst_satz, einheit FROM materialarten ORDER BY materialname ASC")
+	if err != nil {
+		log.Printf("Error querying master prices: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var r templates.MasterPriceRow
+		if scanErr := rows.Scan(&r.MaterialID, &r.Materialname, &r.StandardNettopreis, &r.MwstSatz, &r.Einheit); scanErr == nil {
+			masterRows = append(masterRows, r)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Printf("Rows error master prices: %v", err)
+	}
+
+	// Load Custom overrides
+	rowsCustom, err := s.db.Query(`
+		SELECT p.kundennummer, k.kundenname, p.material_id, m.materialname, 
+		       p.sonder_nettopreis, m.standard_nettopreis, m.einheit
+		FROM preislisten p
+		JOIN kunden k ON p.kundennummer = k.kundennummer
+		JOIN materialarten m ON p.material_id = m.material_id
+		ORDER BY k.kundenname ASC, m.materialname ASC
+	`)
+	if err != nil {
+		log.Printf("Error querying custom prices: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+	defer rowsCustom.Close()
+	for rowsCustom.Next() {
+		var r templates.CustomPriceRow
+		if scanErr := rowsCustom.Scan(
+			&r.Kundennummer, &r.Kundenname, &r.MaterialID, &r.Materialname,
+			&r.SonderNettopreis, &r.StandardNettopreis, &r.Einheit,
+		); scanErr == nil {
+			customRows = append(customRows, r)
+		}
+	}
+	if err = rowsCustom.Err(); err != nil {
+		log.Printf("Rows error custom prices: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	page := templates.PreislistenPage(masterRows, customRows, tab)
+	layout := templates.Layout("Preislisten", page)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering Preislisten page: %v", err)
+	}
+}
+
+func (s *Server) handleMasterPriceEditForm(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Produkt-ID", http.StatusBadRequest)
+		return
+	}
+
+	var m templates.MasterPriceRow
+	err = s.db.QueryRow("SELECT material_id, materialname, standard_nettopreis, mwst_satz, einheit FROM materialarten WHERE material_id = ?", id).Scan(
+		&m.MaterialID, &m.Materialname, &m.StandardNettopreis, &m.MwstSatz, &m.Einheit,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+		} else {
+			log.Printf("Query error fetching material: %v", err)
+			http.Error(w, "DB Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.MasterPriceForm(&m)
+	layout := templates.Layout("Standardpreis bearbeiten", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering edit master price form: %v", err)
+	}
+}
+
+func (s *Server) handleMasterPriceUpdate(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Produkt-ID", http.StatusBadRequest)
+		return
+	}
+
+	stdNettoStr := r.FormValue("standard_nettopreis")
+	einheit := r.FormValue("einheit")
+	mwstStr := r.FormValue("mwst_satz")
+
+	stdNetto, err := strconv.ParseFloat(stdNettoStr, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Standardpreis", http.StatusBadRequest)
+		return
+	}
+	mwst, err := strconv.ParseFloat(mwstStr, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Mehrwertsteuersatz", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec("UPDATE materialarten SET standard_nettopreis = ?, einheit = ?, mwst_satz = ? WHERE material_id = ?", stdNetto, einheit, mwst, id)
+	if err != nil {
+		log.Printf("Update standard price error: %v", err)
+		http.Error(w, "Datenbankfehler beim Aktualisieren des Standardpreises", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/preislisten?tab=master", http.StatusSeeOther)
+}
+
+func (s *Server) handlePreislistenNewForm(w http.ResponseWriter, r *http.Request) {
+	kunden, materialien, _, _, err := s.fetchLookups()
+	if err != nil {
+		log.Printf("Lookup fetch error: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+
+	var dummy templates.CustomPriceRow
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.CustomPriceForm(&dummy, kunden, materialien, false)
+	layout := templates.Layout("Sonderpreis anlegen", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering new custom price form: %v", err)
+	}
+}
+
+func (s *Server) handlePreislistenCreate(w http.ResponseWriter, r *http.Request) {
+	kNumStr := r.FormValue("kundennummer")
+	mIDStr := r.FormValue("material_id")
+	sonderPriceStr := r.FormValue("sonder_nettopreis")
+
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Kunde", http.StatusBadRequest)
+		return
+	}
+	mID, err := strconv.ParseInt(mIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültiges Material", http.StatusBadRequest)
+		return
+	}
+	sonderPrice, err := strconv.ParseFloat(sonderPriceStr, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Sonderpreis", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec("INSERT OR REPLACE INTO preislisten (kundennummer, material_id, sonder_nettopreis) VALUES (?, ?, ?)", kNum, mID, sonderPrice)
+	if err != nil {
+		log.Printf("Insert custom price override error: %v", err)
+		http.Error(w, "Datenbankfehler beim Einfügen", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/preislisten?tab=custom", http.StatusSeeOther)
+}
+
+func (s *Server) handlePreislistenEditForm(w http.ResponseWriter, r *http.Request) {
+	kNumStr := r.PathValue("kundennummer")
+	mIDStr := r.PathValue("material_id")
+
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Kundennummer", http.StatusBadRequest)
+		return
+	}
+	mID, err := strconv.ParseInt(mIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Material-ID", http.StatusBadRequest)
+		return
+	}
+
+	var c templates.CustomPriceRow
+	err = s.db.QueryRow(`
+		SELECT p.kundennummer, k.kundenname, p.material_id, m.materialname, 
+		       p.sonder_nettopreis, m.standard_nettopreis, m.einheit
+		FROM preislisten p
+		JOIN kunden k ON p.kundennummer = k.kundennummer
+		JOIN materialarten m ON p.material_id = m.material_id
+		WHERE p.kundennummer = ? AND p.material_id = ?
+	`, kNum, mID).Scan(
+		&c.Kundennummer, &c.Kundenname, &c.MaterialID, &c.Materialname,
+		&c.SonderNettopreis, &c.StandardNettopreis, &c.Einheit,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+		} else {
+			log.Printf("Query custom price override error: %v", err)
+			http.Error(w, "DB Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.CustomPriceForm(&c, nil, nil, true)
+	layout := templates.Layout("Sonderpreis bearbeiten", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering edit custom price form: %v", err)
+	}
+}
+
+func (s *Server) handlePreislistenUpdate(w http.ResponseWriter, r *http.Request) {
+	kNumStr := r.PathValue("kundennummer")
+	mIDStr := r.PathValue("material_id")
+	sonderPriceStr := r.FormValue("sonder_nettopreis")
+
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Kundennummer", http.StatusBadRequest)
+		return
+	}
+	mID, err := strconv.ParseInt(mIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Material-ID", http.StatusBadRequest)
+		return
+	}
+	sonderPrice, err := strconv.ParseFloat(sonderPriceStr, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Sonderpreis", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec("UPDATE preislisten SET sonder_nettopreis = ? WHERE kundennummer = ? AND material_id = ?", sonderPrice, kNum, mID)
+	if err != nil {
+		log.Printf("Update custom price override error: %v", err)
+		http.Error(w, "Datenbankfehler beim Aktualisieren", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/preislisten?tab=custom", http.StatusSeeOther)
+}
+
+func (s *Server) handlePreislistenDelete(w http.ResponseWriter, r *http.Request) {
+	kNumStr := r.PathValue("kundennummer")
+	mIDStr := r.PathValue("material_id")
+
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Kundennummer", http.StatusBadRequest)
+		return
+	}
+	mID, err := strconv.ParseInt(mIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige Material-ID", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec("DELETE FROM preislisten WHERE kundennummer = ? AND material_id = ?", kNum, mID)
+	if err != nil {
+		log.Printf("Delete custom price override error: %v", err)
 		http.Error(w, "Datenbankfehler beim Löschen", http.StatusInternalServerError)
 		return
 	}

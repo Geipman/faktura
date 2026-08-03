@@ -1,0 +1,284 @@
+package templates
+
+import (
+	"fmt"
+)
+
+type MasterPriceRow struct {
+	MaterialID        int64
+	Materialname      string
+	StandardNettopreis float64
+	MwstSatz          float64
+	Einheit           string
+}
+
+type CustomPriceRow struct {
+	Kundennummer      int64
+	Kundenname        string
+	MaterialID        int64
+	Materialname      string
+	SonderNettopreis  float64
+	StandardNettopreis float64
+	Einheit           string
+}
+
+templ PreislistenPage(
+	masterRows []MasterPriceRow,
+	customRows []CustomPriceRow,
+	activeTab string,
+) {
+	<div class="space-y-8 animate-fade-in">
+		<div class="flex items-center justify-between">
+			<div>
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Preislisten & Substratpreise</h2>
+				<p class="text-slate-400 mt-1">Verwalten Sie globale Produkt-Basispreise und kundenspezifische Preisabsprachen.</p>
+			</div>
+			
+			if activeTab == "custom" {
+				<a href="/preislisten/neu" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+					Neuer Sonderpreis
+				</a>
+			}
+		</div>
+
+		<!-- Tab Navigation -->
+		<div class="border-b border-slate-800">
+			<nav class="flex gap-6 -mb-px">
+				<a href="/preislisten?tab=master" class={ "pb-4 text-sm font-semibold border-b-2 transition-all ", templ.KV("border-emerald-500 text-emerald-400", activeTab == "master" || activeTab == ""), templ.KV("border-transparent text-slate-400 hover:text-slate-200", activeTab != "master" && activeTab != "") }>
+					Master-Preisliste (Basiswerte)
+				</a>
+				<a href="/preislisten?tab=custom" class={ "pb-4 text-sm font-semibold border-b-2 transition-all ", templ.KV("border-emerald-500 text-emerald-400", activeTab == "custom"), templ.KV("border-transparent text-slate-400 hover:text-slate-200", activeTab != "custom") }>
+					Kunden-Sonderpreise
+				</a>
+			</nav>
+		</div>
+
+		<!-- Content Panels -->
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-6">
+			if activeTab == "custom" {
+				@CustomPricesTable(customRows)
+			} else {
+				@MasterPricesTable(masterRows)
+			}
+		</div>
+	</div>
+}
+
+templ MasterPricesTable(rows []MasterPriceRow) {
+	if len(rows) == 0 {
+		<div class="text-center py-12">
+			<p class="text-slate-500">Keine Produkte/Materialien im Katalog gefunden.</p>
+		</div>
+	} else {
+		<div class="overflow-x-auto">
+			<table class="w-full text-left text-sm text-slate-300">
+				<thead class="text-xs uppercase text-slate-500 border-b border-slate-800">
+					<tr>
+						<th class="py-3 px-4">Produkt-ID</th>
+						<th class="py-3 px-4">Material / Produkt</th>
+						<th class="py-3 px-4 text-right">Standard Netto-Basispreis</th>
+						<th class="py-3 px-4">Einheit</th>
+						<th class="py-3 px-4 text-right">MwSt. Satz</th>
+						<th class="py-3 px-4 text-center">Aktionen</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-slate-800/50">
+					for _, r := range rows {
+						<tr class="hover:bg-slate-900/40 transition-colors">
+							<td class="py-3 px-4 font-mono text-xs text-slate-500">#{ fmt.Sprintf("%d", r.MaterialID) }</td>
+							<td class="py-3 px-4 font-medium text-white">{ r.Materialname }</td>
+							<td class="py-3 px-4 text-right font-mono text-emerald-400 font-bold">{ fmt.Sprintf("%.2f €", r.StandardNettopreis) }</td>
+							<td class="py-3 px-4 text-slate-400">{ r.Einheit }</td>
+							<td class="py-3 px-4 text-right text-slate-450 font-mono">{ fmt.Sprintf("%.1f %%", r.MwstSatz) }</td>
+							<td class="py-3 px-4 text-center">
+								<a href={ templ.URL(fmt.Sprintf("/preislisten/master/bearbeiten/%d", r.MaterialID)) } class="text-xs font-semibold text-slate-300 hover:text-white transition-colors bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700">
+									Basispreis ändern
+								</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+templ CustomPricesTable(rows []CustomPriceRow) {
+	if len(rows) == 0 {
+		<div class="text-center py-12">
+			<p class="text-slate-500">Keine kundenspezifischen Preis-Overrides eingerichtet.</p>
+		</div>
+	} else {
+		<div class="overflow-x-auto">
+			<table class="w-full text-left text-sm text-slate-300">
+				<thead class="text-xs uppercase text-slate-500 border-b border-slate-800">
+					<tr>
+						<th class="py-3 px-4">Kunde</th>
+						<th class="py-3 px-4">Produkt / Material</th>
+						<th class="py-3 px-4 text-right">Sonderpreis Netto</th>
+						<th class="py-3 px-4 text-right">Standard Basispreis</th>
+						<th class="py-3 px-4">Abweichung / Rabatt</th>
+						<th class="py-3 px-4 text-center">Aktionen</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-slate-800/50">
+					for _, r := range rows {
+						<tr id={ fmt.Sprintf("customprice-row-%d-%d", r.Kundennummer, r.MaterialID) } class="hover:bg-slate-900/40 transition-colors">
+							<td class="py-3 px-4 font-medium text-white">{ r.Kundenname } <span class="font-mono text-xs text-slate-500">({ fmt.Sprintf("%d", r.Kundennummer) })</span></td>
+							<td class="py-3 px-4">{ r.Materialname }</td>
+							<td class="py-3 px-4 text-right font-mono text-emerald-400 font-bold">{ fmt.Sprintf("%.2f €", r.SonderNettopreis) } / { r.Einheit }</td>
+							<td class="py-3 px-4 text-right font-mono text-slate-500">{ fmt.Sprintf("%.2f €", r.StandardNettopreis) }</td>
+							<td class="py-3 px-4">
+								if r.StandardNettopreis > r.SonderNettopreis {
+									<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+										{ fmt.Sprintf("- %.2f €", r.StandardNettopreis - r.SonderNettopreis) }
+									</span>
+								} else if r.StandardNettopreis < r.SonderNettopreis {
+									<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+										{ fmt.Sprintf("+ %.2f €", r.SonderNettopreis - r.StandardNettopreis) }
+									</span>
+								} else {
+									<span class="text-xs text-slate-500 italic">Keine Abweichung</span>
+								}
+							</td>
+							<td class="py-3 px-4 text-center space-x-2 whitespace-nowrap">
+								<a href={ templ.URL(fmt.Sprintf("/preislisten/bearbeiten/%d/%d", r.Kundennummer, r.MaterialID)) } class="text-xs font-semibold text-slate-300 hover:text-white transition-colors bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700">
+									Bearbeiten
+								</a>
+								<button hx-post={ fmt.Sprintf("/preislisten/loeschen/%d/%d", r.Kundennummer, r.MaterialID) } hx-confirm="Möchten Sie diesen kundenindividuellen Sonderpreis wirklich löschen?" hx-target={ fmt.Sprintf("#customprice-row-%d-%d", r.Kundennummer, r.MaterialID) } hx-swap="outerHTML" class="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20 cursor-pointer">
+									Löschen
+								</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+templ MasterPriceForm(m *MasterPriceRow) {
+	<div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
+		<div>
+			<h2 class="text-3xl font-extrabold tracking-tight text-white">Standardpreis ändern</h2>
+			<p class="text-slate-400 mt-1">Passen Sie den Standardpreis für das Produkt "{ m.Materialname }" an.</p>
+		</div>
+
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-8">
+			<form action={ templ.URL(fmt.Sprintf("/preislisten/master/bearbeiten/%d", m.MaterialID)) } method="POST" class="space-y-6">
+				
+				<!-- Produktname -->
+				<div>
+					<label class="block text-sm font-semibold text-slate-400 mb-2">Produktname</label>
+					<input type="text" readonly value={ m.Materialname } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 focus:outline-none cursor-not-allowed" />
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<!-- Standardpreis -->
+					<div class="md:col-span-2">
+						<label for="standard_nettopreis" class="block text-sm font-semibold text-slate-300 mb-2">Netto-Standardpreis (in €)</label>
+						<input type="number" step="0.01" id="standard_nettopreis" name="standard_nettopreis" required value={ fmt.Sprintf("%.2f", m.StandardNettopreis) } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+					</div>
+					<!-- Einheit -->
+					<div>
+						<label for="einheit" class="block text-sm font-semibold text-slate-300 mb-2">Einheit</label>
+						<input type="text" id="einheit" name="einheit" required value={ m.Einheit } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+					</div>
+				</div>
+
+				<!-- MwSt. Satz -->
+				<div>
+					<label for="mwst_satz" class="block text-sm font-semibold text-slate-300 mb-2">Mehrwertsteuer-Satz (in %)</label>
+					<input type="number" step="0.1" id="mwst_satz" name="mwst_satz" required value={ fmt.Sprintf("%.1f", m.MwstSatz) } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+				</div>
+
+				<div class="pt-4 border-t border-slate-800 flex gap-4 justify-end">
+					<a href="/preislisten" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">
+						Abbrechen
+					</a>
+					<button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+						Speichern
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}
+
+templ CustomPriceForm(
+	c *CustomPriceRow,
+	kunden []KundeLookup,
+	materialien []MaterialLookup,
+	isEdit bool,
+) {
+	<div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
+		<div>
+			if isEdit {
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Sonderpreis bearbeiten</h2>
+				<p class="text-slate-400 mt-1">Ändern Sie den kundenindividuellen Preisabsprachepreis.</p>
+			} else {
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Sonderpreis anlegen</h2>
+				<p class="text-slate-400 mt-1">Vereinbaren Sie einen abweichenden Nettopreis für einen bestimmten Kunden und Artikel.</p>
+			}
+		</div>
+
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-8">
+			<form action={ templ.URL(func() string {
+				if isEdit {
+					return fmt.Sprintf("/preislisten/bearbeiten/%d/%d", c.Kundennummer, c.MaterialID)
+				}
+				return "/preislisten/neu"
+			}()) } method="POST" class="space-y-6">
+				
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<!-- Kunde -->
+					<div>
+						<label for="kundennummer" class="block text-sm font-semibold text-slate-300 mb-2">Kunde</label>
+						if isEdit {
+							<input type="hidden" name="kundennummer" value={ fmt.Sprintf("%d", c.Kundennummer) } />
+							<input type="text" readonly value={ fmt.Sprintf("%s (%d)", c.Kundenname, c.Kundennummer) } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 focus:outline-none cursor-not-allowed" />
+						} else {
+							<select id="kundennummer" name="kundennummer" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+								<option value="">-- Kunde auswählen --</option>
+								for _, k := range kunden {
+									<option value={ fmt.Sprintf("%d", k.Kundennummer) } selected?={ c.Kundennummer == k.Kundennummer }>{ k.Kundenname } ({ fmt.Sprintf("%d", k.Kundennummer) })</option>
+								}
+							</select>
+						}
+					</div>
+
+					<!-- Material -->
+					<div>
+						<label for="material_id" class="block text-sm font-semibold text-slate-300 mb-2">Material / Produkt</label>
+						if isEdit {
+							<input type="hidden" name="material_id" value={ fmt.Sprintf("%d", c.MaterialID) } />
+							<input type="text" readonly value={ c.Materialname } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 focus:outline-none cursor-not-allowed" />
+						} else {
+							<select id="material_id" name="material_id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+								<option value="">-- Material auswählen --</option>
+								for _, m := range materialien {
+									<option value={ fmt.Sprintf("%d", m.MaterialID) } selected?={ c.MaterialID == m.MaterialID }>{ m.Materialname } ({ m.Einheit })</option>
+								}
+							</select>
+						}
+					</div>
+				</div>
+
+				<!-- Sonderpreis Netto -->
+				<div>
+					<label for="sonder_nettopreis" class="block text-sm font-semibold text-slate-300 mb-2">Individueller Netto-Sonderpreis (in €)</label>
+					<input type="number" step="0.01" id="sonder_nettopreis" name="sonder_nettopreis" required value={ func() string { if isEdit { return fmt.Sprintf("%.2f", c.SonderNettopreis) }; return "" }() } placeholder="z.B. 10.50" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+				</div>
+
+				<div class="pt-4 border-t border-slate-800 flex gap-4 justify-end">
+					<a href="/preislisten?tab=custom" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">
+						Abbrechen
+					</a>
+					<button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+						Speichern
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}
