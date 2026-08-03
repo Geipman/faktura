@@ -245,7 +245,8 @@ func main() {
 		customerMapping[kuerzel] = kundenNummer
 		startNum++
 
-		_, err = tx.Exec(`
+		_, err = tx.Exec(
+			`
 			INSERT INTO kunden (
 				kundennummer, kundenname, namenserweiterung, ist_privat, brief_versand,
 				strasse, plz, ort, landescode, telefon, fax, email_allgemein, email_rechnung,
@@ -348,7 +349,8 @@ func main() {
 			}
 		}
 
-		_, err = tx.Exec(`
+		_, err = tx.Exec(
+			`
 			INSERT OR REPLACE INTO wiegezettel (
 				wiegezettel_id, kundennummer, datum, gewicht, material_id, anlieferungsort, anlieferer, referenz
 			) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -361,13 +363,14 @@ func main() {
 
 	// 7. Initialize EigeneStammdaten using sample invoice values
 	log.Println("Initializing EigeneStammdaten...")
-	_, err = tx.Exec(`
+	_, err = tx.Exec(
+		`
 		INSERT INTO eigene_stammdaten (
 			id, firmenname, inhaber, strasse, plz, ort, landescode, email, ust_id_nr, steuernummer, bankname, iban, bic
 		) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		"Kompostwerk Büttelborn GmbH", "T. Geipman", "Auf der Hardt/An der B 42", "64572", "Büttelborn", "DE",
-		"faktura@aws-service.com", "DE5089000048161405", "12/345/67890", "Sparkasse Musterstadt",
-		"DE58508900000048161405", "GENODEF1VBD",
+		"Kompostierungsanlage Brunnenhof GmbH", "Geipert", "Außerhalb 15", "64584", "Biebesheim", "DE",
+		"info@brunnenhof-kompost.de", "DE 111644242", "", "<to be defined>",
+		"<to be defined>", "<to be defined>",
 	)
 	if err != nil {
 		log.Fatalf("Error inserting EigeneStammdaten: %v", err)

@@ -3,7 +3,7 @@
 # Add Go and local bin paths to the shell PATH
 export PATH := $(PATH):/home/geipman/go/bin:/usr/local/go/bin:$(shell pwd)/bin
 
-.PHONY: all build run test generate css install-tools lint clean migrate
+.PHONY: all build run test generate css install-tools lint clean migrate install-mustang
 
 all: build
 
@@ -43,6 +43,33 @@ install-tools:
 		echo "air already installed."; \
 	fi
 	@echo "All tools checked and ready!"
+
+# Install Mustang CLI and JRE for integration testing
+install-mustang:
+	@echo "Installing/checking Mustang CLI and JRE..."
+	@mkdir -p bin
+	@if [ ! -f bin/mustang-cli.jar ]; then \
+		echo "Downloading Mustang CLI JAR..."; \
+		curl -sSL -o bin/mustang-cli.jar https://repo1.maven.org/maven2/org/mustangproject/Mustang-CLI/2.24.0/Mustang-CLI-2.24.0.jar; \
+	else \
+		echo "Mustang CLI JAR already downloaded."; \
+	fi
+	@if [ ! -d bin/jre ]; then \
+		echo "Downloading JRE 21..."; \
+		curl -sSL -o bin/jre.tar.gz https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse; \
+		echo "Extracting JRE..."; \
+		mkdir -p bin/jre; \
+		tar -xzf bin/jre.tar.gz -C bin/jre --strip-components=1; \
+		rm bin/jre.tar.gz; \
+	else \
+		echo "JRE already installed."; \
+	fi
+	@echo "Creating mustang-cli wrapper script..."
+	@echo '#!/bin/bash' > bin/mustang-cli
+	@echo 'DIR="$$(cd "$$(dirname "$${BASH_SOURCE[0]}")" && pwd)"' >> bin/mustang-cli
+	@echo '"$$DIR/jre/bin/java" -jar "$$DIR/mustang-cli.jar" "$$@"' >> bin/mustang-cli
+	@chmod +x bin/mustang-cli
+	@echo "Mustang CLI setup complete!"
 
 # Generate templ components
 generate:

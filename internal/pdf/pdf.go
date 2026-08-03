@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Geipman/faktura/internal/zugferd"
-	"github.com/pdfcpu/pdfcpu/pkg/api"
+	einvoicezugferd "github.com/dotwavehq/go-einvoice/zugferd"
 	"github.com/signintech/gopdf"
 )
 
@@ -82,13 +82,6 @@ func GenerateInvoicePDF(inv *zugferd.InvoiceData, xmlBytes []byte, outputPath st
 	}
 
 	tempPDFPath := filepath.Join(tmpDir, fmt.Sprintf("temp_%s.pdf", inv.Rechnungsnummer))
-	tempXMLPath := filepath.Join(tmpDir, "factur-x.xml") // Standard ZUGFeRD attachment name
-
-	// Write XML bytes to temp file
-	if err := os.WriteFile(tempXMLPath, xmlBytes, 0644); err != nil {
-		return fmt.Errorf("failed to write temporary ZUGFeRD XML: %w", err)
-	}
-	defer os.Remove(tempXMLPath)
 
 	// Create visual PDF layout
 	pdfDoc := gopdf.GoPdf{}
@@ -313,10 +306,10 @@ func GenerateInvoicePDF(inv *zugferd.InvoiceData, xmlBytes []byte, outputPath st
 	}
 	defer os.Remove(tempPDFPath)
 
-	// Use pdfcpu to attach the factur-x.xml to the PDF
-	err := api.AddAttachmentsFile(tempPDFPath, outputPath, []string{tempXMLPath}, false, nil)
+	// Embed the XML into the PDF as ZUGFeRD PDF/A-3
+	err := einvoicezugferd.EmbedXML(tempPDFPath, xmlBytes, outputPath)
 	if err != nil {
-		return fmt.Errorf("failed to attach ZUGFeRD XML using pdfcpu: %w", err)
+		return fmt.Errorf("failed to embed ZUGFeRD XML into PDF: %w", err)
 	}
 
 	return nil
