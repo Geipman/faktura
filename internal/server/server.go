@@ -54,6 +54,15 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /rechnungen/xml/{id}", s.handleInvoiceXML)
 	s.mux.HandleFunc("GET /rechnungen/pdf/{id}", s.handleInvoicePDF)
 	s.mux.HandleFunc("POST /rechnungen/stornieren/{id}", s.handleInvoiceCancel)
+
+	// Wiegezettel CRUD Routes
+	s.mux.HandleFunc("GET /wiegezettel", s.handleWiegezettelList)
+	s.mux.HandleFunc("GET /wiegezettel/tabelle", s.handleWiegezettelTable)
+	s.mux.HandleFunc("GET /wiegezettel/neu", s.handleWiegezettelNewForm)
+	s.mux.HandleFunc("POST /wiegezettel/neu", s.handleWiegezettelCreate)
+	s.mux.HandleFunc("GET /wiegezettel/bearbeiten/{id}", s.handleWiegezettelEditForm)
+	s.mux.HandleFunc("POST /wiegezettel/bearbeiten/{id}", s.handleWiegezettelUpdate)
+	s.mux.HandleFunc("POST /wiegezettel/loeschen/{id}", s.handleWiegezettelDelete)
 }
 
 // handleIndex redirects to dashboard.
@@ -63,8 +72,70 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var stats templates.DashboardStats
+	// 1. Offene Wiegezettel
+	err := s.db.QueryRow("SELECT COUNT(*) FROM wiegezettel WHERE rechnungsposition_id IS NULL").Scan(&stats.OpenSlips)
+	if err != nil {
+		log.Printf("Error querying open slips: %v", err)
+	}
+
+	// 2. Rechnungen (Monat)
+	err = s.db.QueryRow("SELECT COUNT(*) FROM rechnungen").Scan(&stats.TotalInvoices)
+	if err != nil {
+		log.Printf("Error querying total invoices: %v", err)
+	}
+
+	// 3. Aktive Kunden
+	err = s.db.QueryRow("SELECT COUNT(*) FROM kunden").Scan(&stats.ActiveKunden)
+	if err != nil {
+		log.Printf("Error querying active customers: %v", err)
+	}
+
+	// 4. Last 5 Wiegezettel
+	rows, err := s.db.Query(`
+		SELECT w.wiegezettel_id, w.kundennummer, k.kundenname, w.datum, w.gewicht, 
+		       w.material_id, m.materialname, m.einheit, w.anlieferungsort, w.anlieferer, 
+		       COALESCE(w.referenz, '')
+		FROM wiegezettel w
+		JOIN kunden k ON w.kundennummer = k.kundennummer
+		JOIN materialarten m ON w.material_id = m.material_id
+		ORDER BY w.datum DESC, w.wiegezettel_id DESC
+		LIMIT 5
+	`)
+	var recent []templates.WiegezettelRow
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var row templates.WiegezettelRow
+			var dateStr string
+			scanErr := rows.Scan(
+				&row.ID, &row.Kundennummer, &row.Kundenname, &dateStr, &row.Gewicht,
+				&row.MaterialID, &row.Materialname, &row.Einheit, &row.Anlieferungsort, &row.Anlieferer,
+				&row.Referenz,
+			)
+			if scanErr == nil {
+				var parsedTime time.Time
+				var parseErr error
+				layouts := []string{"2006-01-02 15:04:05", "2006-01-02T15:04:05Z", "2006-01-02T15:04:05", "2006-01-02"}
+				for _, layout := range layouts {
+					if parsedTime, parseErr = time.Parse(layout, dateStr[:Min(len(dateStr), len(layout))]); parseErr == nil {
+						break
+					}
+				}
+				if parseErr == nil {
+					row.Datum = parsedTime
+				} else {
+					row.Datum = time.Now()
+				}
+				recent = append(recent, row)
+			}
+		}
+	} else {
+		log.Printf("Error querying recent slips: %v", err)
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	indexComp := templates.Index()
+	indexComp := templates.Index(stats, recent)
 	layoutComp := templates.Layout("Dashboard", indexComp)
 
 	if err := layoutComp.Render(r.Context(), w); err != nil {
@@ -668,4 +739,444 @@ func (s *Server) handleInvoiceCancel(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/rechnungen", http.StatusSeeOther)
 	}
+}
+
+// queryWiegezettel is a helper that parses query parameters and executes the SQL query.
+func (s *Server) queryWiegezettel(r *http.Request) ([]templates.WiegezettelRow, int64, int64, string, string, error) {
+	kIDStr := r.FormValue("kunde_id")
+	mIDStr := r.FormValue("material_id")
+	status := r.FormValue("status")
+	search := r.FormValue("search")
+
+	var kID, mID int64
+	if kIDStr != "" {
+		if id, err := strconv.ParseInt(kIDStr, 10, 64); err == nil {
+			kID = id
+		}
+	}
+	if mIDStr != "" {
+		if id, err := strconv.ParseInt(mIDStr, 10, 64); err == nil {
+			mID = id
+		}
+	}
+	if status == "" {
+		status = "all"
+	}
+
+	query := `
+		SELECT w.wiegezettel_id, w.kundennummer, k.kundenname, w.datum, w.gewicht, 
+		       w.material_id, m.materialname, m.einheit, w.anlieferungsort, w.anlieferer, 
+		       COALESCE(w.referenz, ''), w.rechnungsposition_id, r.rechnungsnummer
+		FROM wiegezettel w
+		JOIN kunden k ON w.kundennummer = k.kundennummer
+		JOIN materialarten m ON w.material_id = m.material_id
+		LEFT JOIN rechnungspositionen rp ON w.rechnungsposition_id = rp.rechnungsposition_id
+		LEFT JOIN rechnungen r ON rp.rechnung_id = r.rechnung_id
+		WHERE 1=1
+	`
+	var args []interface{}
+
+	if kID > 0 {
+		query += " AND w.kundennummer = ?"
+		args = append(args, kID)
+	}
+	if mID > 0 {
+		query += " AND w.material_id = ?"
+		args = append(args, mID)
+	}
+	if status == "open" {
+		query += " AND w.rechnungsposition_id IS NULL"
+	} else if status == "billed" {
+		query += " AND w.rechnungsposition_id IS NOT NULL"
+	}
+	if search != "" {
+		query += " AND (w.wiegezettel_id = ? OR w.referenz LIKE ?)"
+		searchInt, err := strconv.ParseInt(search, 10, 64)
+		if err == nil {
+			args = append(args, searchInt, "%"+search+"%")
+		} else {
+			args = append(args, -1, "%"+search+"%")
+		}
+	}
+
+	query += " ORDER BY w.datum DESC, w.wiegezettel_id DESC LIMIT 100"
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, 0, 0, "", "", err
+	}
+	defer rows.Close()
+
+	var result []templates.WiegezettelRow
+	for rows.Next() {
+		var row templates.WiegezettelRow
+		var dateStr string
+		var rpID sql.NullInt64
+		var rNum sql.NullString
+		scanErr := rows.Scan(
+			&row.ID, &row.Kundennummer, &row.Kundenname, &dateStr, &row.Gewicht,
+			&row.MaterialID, &row.Materialname, &row.Einheit, &row.Anlieferungsort, &row.Anlieferer,
+			&row.Referenz, &rpID, &rNum,
+		)
+		if scanErr != nil {
+			log.Printf("Scan error in queryWiegezettel: %v", scanErr)
+			continue
+		}
+
+		var parsedTime time.Time
+		var parseErr error
+		layouts := []string{"2006-01-02 15:04:05", "2006-01-02T15:04:05Z", "2006-01-02T15:04:05", "2006-01-02"}
+		for _, layout := range layouts {
+			if parsedTime, parseErr = time.Parse(layout, dateStr[:Min(len(dateStr), len(layout))]); parseErr == nil {
+				break
+			}
+		}
+		if parseErr != nil {
+			row.Datum = time.Now()
+		} else {
+			row.Datum = parsedTime
+		}
+
+		row.RechnungspositionID = rpID
+		row.Rechnungsnummer = rNum
+		result = append(result, row)
+	}
+
+	return result, kID, mID, status, search, nil
+}
+
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (s *Server) handleWiegezettelList(w http.ResponseWriter, r *http.Request) {
+	rows, kID, mID, status, search, err := s.queryWiegezettel(r)
+	if err != nil {
+		log.Printf("Error querying weighing slips: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+
+	kunden, materialien, orte, anliefererList, err := s.fetchLookups()
+	if err != nil {
+		log.Printf("Lookup fetch error: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	page := templates.WiegezettelPage(rows, kunden, materialien, orte, anliefererList, kID, mID, status, search)
+	layout := templates.Layout("Wiegezettel", page)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering Wiegezettel page: %v", err)
+	}
+}
+
+func (s *Server) handleWiegezettelTable(w http.ResponseWriter, r *http.Request) {
+	rows, _, _, _, _, err := s.queryWiegezettel(r)
+	if err != nil {
+		log.Printf("Error querying weighing slips: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	comp := templates.WiegezettelTable(rows)
+	if err := comp.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering Wiegezettel table: %v", err)
+	}
+}
+
+func (s *Server) fetchLookups() ([]templates.KundeLookup, []templates.MaterialLookup, []string, []string, error) {
+	kRows, err := s.db.Query("SELECT kundennummer, kundenname FROM kunden ORDER BY kundenname ASC")
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	defer kRows.Close()
+	var kunden []templates.KundeLookup
+	for kRows.Next() {
+		var k templates.KundeLookup
+		if scanErr := kRows.Scan(&k.Kundennummer, &k.Kundenname); scanErr == nil {
+			kunden = append(kunden, k)
+		}
+	}
+
+	mRows, err := s.db.Query("SELECT material_id, materialname, einheit FROM materialarten ORDER BY materialname ASC")
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	defer mRows.Close()
+	var materialien []templates.MaterialLookup
+	for mRows.Next() {
+		var m templates.MaterialLookup
+		if scanErr := mRows.Scan(&m.MaterialID, &m.Materialname, &m.Einheit); scanErr == nil {
+			materialien = append(materialien, m)
+		}
+	}
+
+	oRows, err := s.db.Query("SELECT anlieferungs_ort FROM anlieferungsorte ORDER BY anlieferungs_ort ASC")
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	defer oRows.Close()
+	var orte []string
+	for oRows.Next() {
+		var o string
+		if scanErr := oRows.Scan(&o); scanErr == nil {
+			orte = append(orte, o)
+		}
+	}
+
+	aRows, err := s.db.Query("SELECT anlieferer_herkunft FROM anlieferer ORDER BY anlieferer_herkunft ASC")
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	defer aRows.Close()
+	var anliefererList []string
+	for aRows.Next() {
+		var a string
+		if scanErr := aRows.Scan(&a); scanErr == nil {
+			anliefererList = append(anliefererList, a)
+		}
+	}
+
+	return kunden, materialien, orte, anliefererList, nil
+}
+
+func (s *Server) handleWiegezettelNewForm(w http.ResponseWriter, r *http.Request) {
+	kunden, materialien, orte, anliefererList, err := s.fetchLookups()
+	if err != nil {
+		log.Printf("Lookup fetch error: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+
+	var nextID int64
+	err = s.db.QueryRow("SELECT COALESCE(MAX(wiegezettel_id), 0) + 1 FROM wiegezettel").Scan(&nextID)
+	if err != nil {
+		nextID = 1
+	}
+
+	var dummyRow templates.WiegezettelRow
+	dummyRow.Datum = time.Now()
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.WiegezettelForm(&dummyRow, kunden, materialien, orte, anliefererList, false, nextID)
+	layout := templates.Layout("Wiegezettel erfassen", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering new weighing slip form: %v", err)
+	}
+}
+
+func (s *Server) handleWiegezettelCreate(w http.ResponseWriter, r *http.Request) {
+	idStr := r.FormValue("wiegezettel_id")
+	kNumStr := r.FormValue("kundennummer")
+	datumStr := r.FormValue("datum")
+	gewichtStr := r.FormValue("gewicht")
+	materialIDStr := r.FormValue("material_id")
+	ort := r.FormValue("anlieferungsort")
+	anlieferer := r.FormValue("anlieferer")
+	referenz := r.FormValue("referenz")
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige ID", http.StatusBadRequest)
+		return
+	}
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Kunde", http.StatusBadRequest)
+		return
+	}
+	datum, err := time.Parse("2006-01-02T15:04", datumStr)
+	if err != nil {
+		http.Error(w, "Ungültiges Datum", http.StatusBadRequest)
+		return
+	}
+	gewicht, err := strconv.ParseFloat(gewichtStr, 64)
+	if err != nil {
+		http.Error(w, "Ungültiges Gewicht", http.StatusBadRequest)
+		return
+	}
+	materialID, err := strconv.ParseInt(materialIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültiges Material", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec(`
+		INSERT INTO wiegezettel (
+			wiegezettel_id, kundennummer, datum, gewicht, material_id, anlieferungsort, anlieferer, referenz
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		id, kNum, datum.Format("2006-01-02 15:04:05"), gewicht, materialID, ort, anlieferer, referenz,
+	)
+	if err != nil {
+		log.Printf("Insert Wiegezettel error: %v", err)
+		http.Error(w, "Datenbankfehler beim Einfügen", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/wiegezettel", http.StatusSeeOther)
+}
+
+func (s *Server) handleWiegezettelEditForm(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige ID", http.StatusBadRequest)
+		return
+	}
+
+	var row templates.WiegezettelRow
+	var dateStr string
+	var rpID sql.NullInt64
+	err = s.db.QueryRow(`
+		SELECT wiegezettel_id, kundennummer, datum, gewicht, material_id, 
+		       anlieferungsort, anlieferer, COALESCE(referenz, ''), rechnungsposition_id
+		FROM wiegezettel WHERE wiegezettel_id = ?
+	`, id).Scan(
+		&row.ID, &row.Kundennummer, &dateStr, &row.Gewicht, &row.MaterialID,
+		&row.Anlieferungsort, &row.Anlieferer, &row.Referenz, &rpID,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+		} else {
+			log.Printf("Query error fetching Wiegezettel: %v", err)
+			http.Error(w, "DB Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	row.RechnungspositionID = rpID
+
+	if rpID.Valid {
+		http.Error(w, "Dieser Wiegezettel wurde bereits abgerechnet und kann nicht bearbeitet werden.", http.StatusForbidden)
+		return
+	}
+
+	var parsedTime time.Time
+	layouts := []string{"2006-01-02 15:04:05", "2006-01-02T15:04:05Z", "2006-01-02T15:04:05", "2006-01-02"}
+	for _, layout := range layouts {
+		if parsedTime, err = time.Parse(layout, dateStr[:Min(len(dateStr), len(layout))]); err == nil {
+			break
+		}
+	}
+	if err != nil {
+		row.Datum = time.Now()
+	} else {
+		row.Datum = parsedTime
+	}
+
+	kunden, materialien, orte, anliefererList, err := s.fetchLookups()
+	if err != nil {
+		log.Printf("Lookup fetch error: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	form := templates.WiegezettelForm(&row, kunden, materialien, orte, anliefererList, true, 0)
+	layout := templates.Layout("Wiegezettel bearbeiten", form)
+	if err := layout.Render(r.Context(), w); err != nil {
+		log.Printf("Error rendering edit weighing slip form: %v", err)
+	}
+}
+
+func (s *Server) handleWiegezettelUpdate(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige ID", http.StatusBadRequest)
+		return
+	}
+
+	var rpID sql.NullInt64
+	err = s.db.QueryRow("SELECT rechnungsposition_id FROM wiegezettel WHERE wiegezettel_id = ?", id).Scan(&rpID)
+	if err != nil {
+		log.Printf("Query error check billed: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+	if rpID.Valid {
+		http.Error(w, "Dieser Wiegezettel wurde bereits abgerechnet und kann nicht bearbeitet werden.", http.StatusForbidden)
+		return
+	}
+
+	kNumStr := r.FormValue("kundennummer")
+	datumStr := r.FormValue("datum")
+	gewichtStr := r.FormValue("gewicht")
+	materialIDStr := r.FormValue("material_id")
+	ort := r.FormValue("anlieferungsort")
+	anlieferer := r.FormValue("anlieferer")
+	referenz := r.FormValue("referenz")
+
+	kNum, err := strconv.ParseInt(kNumStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültiger Kunde", http.StatusBadRequest)
+		return
+	}
+	datum, err := time.Parse("2006-01-02T15:04", datumStr)
+	if err != nil {
+		http.Error(w, "Ungültiges Datum", http.StatusBadRequest)
+		return
+	}
+	gewicht, err := strconv.ParseFloat(gewichtStr, 64)
+	if err != nil {
+		http.Error(w, "Ungültiges Gewicht", http.StatusBadRequest)
+		return
+	}
+	materialID, err := strconv.ParseInt(materialIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültiges Material", http.StatusBadRequest)
+		return
+	}
+
+	_, err = s.db.Exec(`
+		UPDATE wiegezettel 
+		SET kundennummer = ?, datum = ?, gewicht = ?, material_id = ?, 
+		    anlieferungsort = ?, anlieferer = ?, referenz = ?
+		WHERE wiegezettel_id = ?`,
+		kNum, datum.Format("2006-01-02 15:04:05"), gewicht, materialID, ort, anlieferer, referenz, id,
+	)
+	if err != nil {
+		log.Printf("Update Wiegezettel error: %v", err)
+		http.Error(w, "Datenbankfehler beim Aktualisieren", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/wiegezettel", http.StatusSeeOther)
+}
+
+func (s *Server) handleWiegezettelDelete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Ungültige ID", http.StatusBadRequest)
+		return
+	}
+
+	var rpID sql.NullInt64
+	err = s.db.QueryRow("SELECT rechnungsposition_id FROM wiegezettel WHERE wiegezettel_id = ?", id).Scan(&rpID)
+	if err != nil {
+		log.Printf("Query error check billed: %v", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
+		return
+	}
+	if rpID.Valid {
+		http.Error(w, "Dieser Wiegezettel wurde bereits abgerechnet und kann nicht gelöscht werden.", http.StatusForbidden)
+		return
+	}
+
+	_, err = s.db.Exec("DELETE FROM wiegezettel WHERE wiegezettel_id = ?", id)
+	if err != nil {
+		log.Printf("Delete Wiegezettel error: %v", err)
+		http.Error(w, "Datenbankfehler beim Löschen", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

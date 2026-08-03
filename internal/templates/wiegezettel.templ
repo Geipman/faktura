@@ -1,0 +1,295 @@
+package templates
+
+import (
+	"database/sql"
+	"fmt"
+	"time"
+)
+
+type WiegezettelRow struct {
+	ID                  int64
+	Kundennummer        int64
+	Kundenname          string
+	Datum               time.Time
+	Gewicht             float64
+	MaterialID          int64
+	Materialname        string
+	Einheit             string
+	Anlieferungsort     string
+	Anlieferer          string
+	Referenz            string
+	RechnungspositionID sql.NullInt64
+	Rechnungsnummer     sql.NullString
+}
+
+type MaterialLookup struct {
+	MaterialID   int64
+	Materialname string
+	Einheit      string
+}
+
+templ WiegezettelPage(
+	rows []WiegezettelRow,
+	kunden []KundeLookup,
+	materialien []MaterialLookup,
+	orte []string,
+	anliefererList []string,
+	selectedKunde int64,
+	selectedMaterial int64,
+	selectedStatus string,
+	search string,
+) {
+	<div class="space-y-8 animate-fade-in">
+		<div class="flex items-center justify-between">
+			<div>
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Wiegezettel</h2>
+				<p class="text-slate-400 mt-1">Erfassen, filtern und verwalten Sie die Wiegezettel der Anlieferungen.</p>
+			</div>
+			
+			<a href="/wiegezettel/neu" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+				Neuer Wiegezettel
+			</a>
+		</div>
+
+		<!-- Filter Bar -->
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-6">
+			<form hx-get="/wiegezettel/tabelle" hx-target="#wiegezettel-tabelle-container" hx-trigger="change from:select, keyup from:input delay:200ms" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+				<!-- Kunde Filter -->
+				<div>
+					<label for="filter-kunde" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Kunde</label>
+					<select id="filter-kunde" name="kunde_id" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+						<option value="0">-- Alle Kunden --</option>
+						for _, k := range kunden {
+							<option value={ fmt.Sprintf("%d", k.Kundennummer) } selected?={ selectedKunde == k.Kundennummer }>{ k.Kundenname }</option>
+						}
+					</select>
+				</div>
+
+				<!-- Material Filter -->
+				<div>
+					<label for="filter-material" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Material</label>
+					<select id="filter-material" name="material_id" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+						<option value="0">-- Alle Materialien --</option>
+						for _, m := range materialien {
+							<option value={ fmt.Sprintf("%d", m.MaterialID) } selected?={ selectedMaterial == m.MaterialID }>{ m.Materialname }</option>
+						}
+					</select>
+				</div>
+
+				<!-- Status Filter -->
+				<div>
+					<label for="filter-status" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Abrechnungsstatus</label>
+					<select id="filter-status" name="status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+						<option value="all" selected?={ selectedStatus == "all" }>Alle</option>
+						<option value="open" selected?={ selectedStatus == "open" }>Offen (nicht abgerechnet)</option>
+						<option value="billed" selected?={ selectedStatus == "billed" }>Abgerechnet</option>
+					</select>
+				</div>
+
+				<!-- Referenz / Suche -->
+				<div>
+					<label for="filter-search" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Suche</label>
+					<input type="text" id="filter-search" name="search" placeholder="ID oder Referenz..." value={ search } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+				</div>
+			</form>
+		</div>
+
+		<!-- Table Container -->
+		<div id="wiegezettel-tabelle-container" class="rounded-2xl border border-slate-800 bg-slate-900/20 p-6">
+			@WiegezettelTable(rows)
+		</div>
+	</div>
+}
+
+templ WiegezettelTable(rows []WiegezettelRow) {
+	if len(rows) == 0 {
+		<div class="text-center py-12">
+			<p class="text-slate-500">Keine Wiegezettel gefunden, die den Kriterien entsprechen.</p>
+		</div>
+	} else {
+		<div class="overflow-x-auto">
+			<table class="w-full text-left text-sm text-slate-300">
+				<thead class="text-xs uppercase text-slate-500 border-b border-slate-800">
+					<tr>
+						<th class="py-3 px-4">Ticket-ID</th>
+						<th class="py-3 px-4">Kunde</th>
+						<th class="py-3 px-4">Produkt / Material</th>
+						<th class="py-3 px-4 text-right">Gewicht</th>
+						<th class="py-3 px-4">Anlieferungsort</th>
+						<th class="py-3 px-4">Anlieferer</th>
+						<th class="py-3 px-4">Datum</th>
+						<th class="py-3 px-4">Referenz</th>
+						<th class="py-3 px-4 text-center">Status</th>
+						<th class="py-3 px-4 text-center">Aktionen</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-slate-800/50">
+					for _, r := range rows {
+						<tr id={ fmt.Sprintf("wiegezettel-row-%d", r.ID) } class="hover:bg-slate-900/40 transition-colors">
+							<td class="py-3 px-4 font-mono text-xs text-emerald-400 font-bold">#{ fmt.Sprintf("%d", r.ID) }</td>
+							<td class="py-3 px-4 font-medium text-white">{ r.Kundenname }</td>
+							<td class="py-3 px-4">{ r.Materialname }</td>
+							<td class="py-3 px-4 text-right font-mono text-white">{ fmt.Sprintf("%.2f %s", r.Gewicht, r.Einheit) }</td>
+							<td class="py-3 px-4 text-xs text-slate-400">{ r.Anlieferungsort }</td>
+							<td class="py-3 px-4 text-xs text-slate-400">{ r.Anlieferer }</td>
+							<td class="py-3 px-4 text-slate-400 text-xs">{ r.Datum.Format("02.01.2006 15:04") }</td>
+							<td class="py-3 px-4 text-xs text-slate-500 font-mono">{ r.Referenz }</td>
+							<td class="py-3 px-4 text-center">
+								if r.RechnungspositionID.Valid {
+									<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title={ fmt.Sprintf("Abgerechnet in Rechnung %s", r.Rechnungsnummer.String) }>
+										Abgerechnet
+									</span>
+								} else {
+									<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+										Offen
+									</span>
+								}
+							</td>
+							<td class="py-3 px-4 text-center space-x-2 whitespace-nowrap">
+								if !r.RechnungspositionID.Valid {
+									<a href={ templ.URL(fmt.Sprintf("/wiegezettel/bearbeiten/%d", r.ID)) } class="text-xs font-semibold text-slate-300 hover:text-white transition-colors bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700">
+										Bearbeiten
+									</a>
+									<button hx-post={ fmt.Sprintf("/wiegezettel/loeschen/%d", r.ID) } hx-confirm="Möchten Sie diesen Wiegezettel wirklich löschen?" hx-target={ fmt.Sprintf("#wiegezettel-row-%d", r.ID) } hx-swap="outerHTML" class="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20 cursor-pointer">
+										Löschen
+									</button>
+								} else {
+									<span class="text-xs text-slate-650 italic">Gesperrt (abgerechnet)</span>
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+templ WiegezettelForm(
+	w *WiegezettelRow,
+	kunden []KundeLookup,
+	materialien []MaterialLookup,
+	orte []string,
+	anliefererList []string,
+	isEdit bool,
+	nextID int64,
+) {
+	<div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
+		<div>
+			if isEdit {
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Wiegezettel bearbeiten</h2>
+				<p class="text-slate-400 mt-1">Ändern Sie die Daten des Wiegezettels #{ fmt.Sprintf("%d", w.ID) }.</p>
+			} else {
+				<h2 class="text-3xl font-extrabold tracking-tight text-white">Wiegezettel erfassen</h2>
+				<p class="text-slate-400 mt-1">Geben Sie die Wiegedaten für eine neue Materialanlieferung ein.</p>
+			}
+		</div>
+
+		<div class="rounded-2xl border border-slate-800 bg-slate-900/20 p-8">
+			<form action={ templ.URL(func() string {
+				if isEdit {
+					return fmt.Sprintf("/wiegezettel/bearbeiten/%d", w.ID)
+				}
+				return "/wiegezettel/neu"
+			}()) } method="POST" class="space-y-6">
+				
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<!-- ID -->
+					<div>
+						<label for="wiegezettel_id" class="block text-sm font-semibold text-slate-300 mb-2">Ticket-ID (Lfd. Nr.)</label>
+						if isEdit {
+							<input type="number" id="wiegezettel_id" name="wiegezettel_id" required readonly value={ fmt.Sprintf("%d", w.ID) } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 focus:outline-none cursor-not-allowed" />
+						} else {
+							<input type="number" id="wiegezettel_id" name="wiegezettel_id" required value={ fmt.Sprintf("%d", nextID) } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+						}
+					</div>
+
+					<!-- Datum -->
+					<div>
+						<label for="datum" class="block text-sm font-semibold text-slate-300 mb-2">Wiegedatum</label>
+						<input type="datetime-local" id="datum" name="datum" required value={ func() string {
+							if isEdit {
+								return w.Datum.Format("2006-01-02T15:04")
+							}
+							return time.Now().Format("2006-01-02T15:04")
+						}() } class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+					</div>
+				</div>
+
+				<!-- Kunde -->
+				<div>
+					<label for="kundennummer" class="block text-sm font-semibold text-slate-300 mb-2">Kunde (Anlieferer / Empfänger)</label>
+					<select id="kundennummer" name="kundennummer" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+						<option value="">-- Kunde auswählen --</option>
+						for _, k := range kunden {
+							<option value={ fmt.Sprintf("%d", k.Kundennummer) } selected?={ w.Kundennummer == k.Kundennummer }>{ k.Kundenname } ({ fmt.Sprintf("%d", k.Kundennummer) })</option>
+						}
+					</select>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<!-- Material -->
+					<div>
+						<label for="material_id" class="block text-sm font-semibold text-slate-300 mb-2">Material / Produkt</label>
+						<select id="material_id" name="material_id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+							<option value="">-- Material auswählen --</option>
+							for _, m := range materialien {
+								<option value={ fmt.Sprintf("%d", m.MaterialID) } selected?={ w.MaterialID == m.MaterialID }>{ m.Materialname } ({ m.Einheit })</option>
+							}
+						</select>
+					</div>
+
+					<!-- Gewicht -->
+					<div>
+						<label for="gewicht" class="block text-sm font-semibold text-slate-300 mb-2">Menge / Gewicht</label>
+						<input type="number" step="0.001" id="gewicht" name="gewicht" required value={ func() string {
+							if isEdit {
+								return fmt.Sprintf("%.3f", w.Gewicht)
+							}
+							return ""
+						}() } placeholder="z.B. 12.480" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<!-- Anlieferungsort -->
+					<div>
+						<label for="anlieferungsort" class="block text-sm font-semibold text-slate-300 mb-2">Anlieferungsort / Übergabeort</label>
+						<select id="anlieferungsort" name="anlieferungsort" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+							<option value="">-- Ort auswählen --</option>
+							for _, o := range orte {
+								<option value={ o } selected?={ w.Anlieferungsort == o }>{ o }</option>
+							}
+						</select>
+					</div>
+
+					<!-- Anlieferer -->
+					<div>
+						<label for="anlieferer" class="block text-sm font-semibold text-slate-300 mb-2">Spediteur / Anlieferer</label>
+						<select id="anlieferer" name="anlieferer" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors">
+							<option value="">-- Anlieferer auswählen --</option>
+							for _, a := range anliefererList {
+								<option value={ a } selected?={ w.Anlieferer == a }>{ a }</option>
+							}
+						</select>
+					</div>
+				</div>
+
+				<!-- Referenz -->
+				<div>
+					<label for="referenz" class="block text-sm font-semibold text-slate-300 mb-2">Referenz (z.B. Kennzeichen / Bestellnummer)</label>
+					<input type="text" id="referenz" name="referenz" value={ w.Referenz } placeholder="z.B. GG-XY-123" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors" />
+				</div>
+
+				<div class="pt-4 border-t border-slate-800 flex gap-4 justify-end">
+					<a href="/wiegezettel" class="px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm font-medium">
+						Abbrechen
+					</a>
+					<button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all text-sm">
+						Speichern
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}

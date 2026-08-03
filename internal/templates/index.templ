@@ -1,6 +1,14 @@
 package templates
 
-templ Index() {
+import "fmt"
+
+type DashboardStats struct {
+	OpenSlips     int
+	TotalInvoices int
+	ActiveKunden  int
+}
+
+templ Index(stats DashboardStats, recent []WiegezettelRow) {
 	<div class="space-y-8 animate-fade-in">
 		<!-- Welcome section -->
 		<div class="flex items-center justify-between">
@@ -29,7 +37,7 @@ templ Index() {
 					</svg>
 				</div>
 				<p class="text-sm font-medium text-slate-400">Offene Wiegezettel</p>
-				<h3 class="text-3xl font-bold text-white mt-2">142</h3>
+				<h3 class="text-3xl font-bold text-white mt-2">{ fmt.Sprintf("%d", stats.OpenSlips) }</h3>
 				<span class="inline-flex items-center gap-1 mt-3 text-xs font-medium text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
 					Warten auf Abrechnung
 				</span>
@@ -43,7 +51,7 @@ templ Index() {
 					</svg>
 				</div>
 				<p class="text-sm font-medium text-slate-400">Rechnungen (Monat)</p>
-				<h3 class="text-3xl font-bold text-white mt-2">48</h3>
+				<h3 class="text-3xl font-bold text-white mt-2">{ fmt.Sprintf("%d", stats.TotalInvoices) }</h3>
 				<span class="inline-flex items-center gap-1 mt-3 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
 					Alle ZUGFeRD-konform
 				</span>
@@ -57,7 +65,7 @@ templ Index() {
 					</svg>
 				</div>
 				<p class="text-sm font-medium text-slate-400">Aktive Kunden</p>
-				<h3 class="text-3xl font-bold text-white mt-2">86</h3>
+				<h3 class="text-3xl font-bold text-white mt-2">{ fmt.Sprintf("%d", stats.ActiveKunden) }</h3>
 				<span class="inline-flex items-center gap-1 mt-3 text-xs font-medium text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
 					Gewerblich / Privat
 				</span>
@@ -96,27 +104,15 @@ templ Index() {
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-slate-800/50">
-							<tr class="hover:bg-slate-900/40 transition-colors">
-								<td class="py-3 px-4 font-mono text-xs text-emerald-400">#WZ-2026-0814</td>
-								<td class="py-3 px-4 font-medium text-white">Müller & Söhne GaLaBau</td>
-								<td class="py-3 px-4">Kompost A-Qualität</td>
-								<td class="py-3 px-4">12.48</td>
-								<td class="py-3 px-4 text-slate-500">Heute, 14:22</td>
-							</tr>
-							<tr class="hover:bg-slate-900/40 transition-colors">
-								<td class="py-3 px-4 font-mono text-xs text-emerald-400">#WZ-2026-0813</td>
-								<td class="py-3 px-4 font-medium text-white">Bio-Hof Kroll</td>
-								<td class="py-3 px-4">Rindenmulch grob</td>
-								<td class="py-3 px-4">8.15</td>
-								<td class="py-3 px-4 text-slate-500">Heute, 11:05</td>
-							</tr>
-							<tr class="hover:bg-slate-900/40 transition-colors">
-								<td class="py-3 px-4 font-mono text-xs text-emerald-400">#WZ-2026-0812</td>
-								<td class="py-3 px-4 font-medium text-white">Stadtwerke Musterstadt</td>
-								<td class="py-3 px-4">Mutterboden gesiebt</td>
-								<td class="py-3 px-4">24.60</td>
-								<td class="py-3 px-4 text-slate-500">Gestern, 16:45</td>
-							</tr>
+							for _, r := range recent {
+								<tr class="hover:bg-slate-900/40 transition-colors">
+									<td class="py-3 px-4 font-mono text-xs text-emerald-400 font-bold">#{ fmt.Sprintf("%d", r.ID) }</td>
+									<td class="py-3 px-4 font-medium text-white">{ r.Kundenname }</td>
+									<td class="py-3 px-4">{ r.Materialname }</td>
+									<td class="py-3 px-4 text-right font-mono text-white">{ fmt.Sprintf("%.2f %s", r.Gewicht, r.Einheit) }</td>
+									<td class="py-3 px-4 text-slate-400 text-xs">{ r.Datum.Format("02.01.2006 15:04") }</td>
+								</tr>
+							}
 						</tbody>
 					</table>
 				</div>
