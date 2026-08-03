@@ -26,13 +26,13 @@ install-tools:
 	fi
 	@if ! command -v golangci-lint >/dev/null 2>&1; then \
 		echo "Installing golangci-lint..."; \
-		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /home/geipman/go/bin v1.61.0; \
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /home/geipman/go/bin v1.64.8; \
 	else \
 		echo "golangci-lint already installed."; \
 	fi
 	@if ! command -v templ >/dev/null 2>&1; then \
 		echo "Installing templ..."; \
-		go install github.com/a-h/templ/cmd/templ@latest; \
+		go install github.com/a-h/templ/cmd/templ@v0.3.1020; \
 	else \
 		echo "templ already installed."; \
 	fi

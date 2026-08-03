@@ -21,7 +21,7 @@ jobs:
           cache: true
 
       - name: Install templ
-        run: go install github.com/a-h/templ/cmd/templ@latest
+        run: go install github.com/a-h/templ/cmd/templ@v0.3.1020
 
       - name: Generate templates
         run: templ generate
@@ -49,7 +49,7 @@ jobs:
           cache: true
 
       - name: Install templ
-        run: go install github.com/a-h/templ/cmd/templ@latest
+        run: go install github.com/a-h/templ/cmd/templ@v0.3.1020
 
       - name: Generate templates
         run: templ generate
@@ -57,5 +57,5 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.61.0
+          version: v1.64.8
           args: --timeout=5m
